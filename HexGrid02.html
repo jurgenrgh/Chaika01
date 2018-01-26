@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>HexGrid02</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="hexFunctions.js"></script>
+        <script type="text/javascript" src="hexClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2> Hex Grid 2nd Pass: 3d coordinates </h2>
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+
+
+///////////////// hexagon /////////////////////////////
+
+            var svgW = 450;    //svg width
+            var svgH = 450;    //svg height
+            var originX = svgW / 2;
+            var originY = svgH / 2;
+            var i, j, k;
+            var ss = Math.min(svgW, svgH) / 15;
+            var triString = [];
+            var hexNeighbors = [];
+            var hexNbrData = [];
+
+            //The base hexagon with center at the origin
+            var hexagonObj = new Hexagon(0, 0, 2 * ss);
+
+            // The data to draw the hexagon as points attr of svg polygon   
+            var hexData = hexagonObj.hexagonPointsString();
+
+            // The data to draw the 6 triangles inside the base hexagon
+            for (k = 0; k < 6; k++) {
+                triString[k] = hexagonObj.trianglePointsString(k);
+            }
+
+            // Center points of the 6 neighbors of the base hexagon
+            var vn = hexagonObj.getHexNeighbors();
+
+            // The data strings for the 6 neighbors
+            for (k = 0; k < 6; k++) {
+                hexNeighbors[k] = new Hexagon(vn[k][0], vn[k][1], 2 * ss);
+                hexNbrData[k] = hexNeighbors[k].hexagonPointsString();
+            }
+            console.log(vn);
+            //console.log(hexNbrData);
+
+            //Draw the 6 triangles inside the base hexagon
+            var svgGrid = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgGroup = svgGrid.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var hexagons = svgGroup.selectAll("polygon")
+                    //.data([hexString])
+                    .data(triString)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i + 1);
+
+                    })
+                    .attr("stroke-width", 2);
+
+            // Draw the 6 neighbors of the basic hexagon        
+            var svgGrid2 = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgNbrGroup = svgGrid2.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var neighbors = svgNbrGroup.selectAll("polygon")
+                    .data(hexNbrData)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i);
+
+                    })
+                    .attr("stroke-width", 2);
+
+
+            var bound = 5;
+            var cHex = [];
+            var cAll = [];
+
+            // Get center coordinates of all the hexagons on the border of
+            // the rhombus determined by
+            // 2 of the 3 basis vectors and a bound on the coordinate values
+            for (i = 0; i <= bound; i++) {
+                cHex[i] = [i * ss, 0, 0];
+                cHex[bound + i] = [bound * ss, i * ss, 0];
+                cHex[2 * bound + i] = [(bound - i) * ss, bound * ss, 0];
+                cHex[3 * bound + i] = [0, (bound - i) * ss, 0];
+            }
+
+            // Get the coordinates of all the centers of the hexagons
+            // on the border of the unit rhombus
+            k = 0;
+            cAll[0] = [0, 0, 0];
+            k++;
+            for (i = 1; i <= bound; i++) {
+                for (j = 0; j <= bound; j++) {
+                    cAll[k] = [i * ss, j * ss, 0];
+                    k++;
+                    cAll[k] = [0, i * ss, j * ss];
+                    k++;
+                    cAll[k] = [j * ss, 0, i * ss];
+                    k++;
+                }
+            }
+
+            //console.log(cAll);
+            var nbrPoly = cHex.length;
+            var nbrAll = cAll.length;
+            var cRect = [];
+            var cRectAll = [];
+            var hexBorder = [];
+            var hexBorderData = [];
+
+            for (k = 0; k < nbrPoly; k++) {
+                cRect[k] = hexToRect(cHex[k]);
+                hexBorder[k] = new Hexagon(cRect[k][0], cRect[k][1], ss);
+                hexBorderData[k] = hexBorder[k].hexagonPointsString();
+            }
+
+            for (k = 0; k < nbrAll; k++) {
+                cRectAll[k] = hexToRect(cAll[k]);
+            }
+            //console.log(cHex);
+            //console.log(cRect);
+
+            // Polygons on the border of unit rhombus
+            var svgRhombus = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgRhombusGroup = svgRhombus.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var hexes = svgRhombusGroup.selectAll("polygon")
+                    //.data([hexString])
+                    .data(hexBorderData)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i + 1);
+
+                    })
+                    .attr("stroke-width", 2);
+
+            // Vertices on the border of unit rhombus        
+            var svgVx = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgVxGroup = svgVx.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var vx = svgVxGroup.selectAll("circle")
+                    //.data([hexString])
+                    .data(cRect)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return d[0];
+                    })
+                    .attr("cy", function (d) {
+                        return d[1];
+                    })
+                    .attr("r", 6)
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 3);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+
+            // Draw all the vertices in a hexagonal region          
+            var svgPts = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgPtsGroup = svgPts.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var pts = svgPtsGroup.selectAll("circle")
+                    //.data([hexString])
+                    .data(cRectAll)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return d[0];
+                    })
+                    .attr("cy", function (d) {
+                        return d[1];
+                    })
+                    .attr("r", 6)
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 3);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+
+            // Draw only those vertices that are centers of hexagons
+            // that tessallate the plane without overlap. These points
+            // are generated by the vectors [2,1,0],[0,2,1],[1,0,2] with
+            // positive factors in the same manner as the grid points
+            // are represented by 3-dim hex coordinates
+
+            var tessBound = 3;
+            var cTess = [];
+            
+            // Get the coordinates of all the centers of the tesselating
+            // hexagons in a hexagonal bounded region
+            k = 0;
+            var alt = Math.sqrt(3);
+            cTess[0] = [0, 0, 0];
+            k++;
+            for (i = 1; i <= tessBound; i++) {
+                for (j = 0; j <= tessBound; j++) {
+                    cTess[k] = [2 * i * ss, (i + (2 * j)) * ss, j * ss];
+                    k++;
+                    cTess[k] = [j * ss, 2 * i * ss, (i + (2 * j)) * ss];
+                    k++;
+                    cTess[k] = [(i + (2 * j)) * ss, j * ss, 2 * i * ss];
+                    k++;
+                }
+            }
+
+            var nbrTess = cTess.length;
+            var cRectTess = [];
+
+            for (k = 0; k < nbrTess; k++) {
+                cRectTess[k] = hexToRect(cTess[k]);
+            }
+            console.log(cRectTess);
+
+            // Draw all the Tesselation vertices in a hexagonal region          
+            var svgTess = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgTessGroup = svgTess.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var tess = svgTessGroup.selectAll("circle")
+
+                    .data(cRectTess)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return d[0];
+                    })
+                    .attr("cy", function (d) {
+                        return d[1];
+                    })
+                    .attr("r", 6)
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 3);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+
+            var tessHexObj = [];
+            var tessHexData = [];
+            for (k = 0; k < nbrTess; k++) {
+                tessHexObj[k] = new Hexagon(cRectTess[k][0], cRectTess[k][1], ss);
+                tessHexData[k] = tessHexObj[k].hexagonPointsString();
+            }
+
+            var svgGrid3 = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgTessHexGroup = svgGrid3.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var tessHex = svgTessHexGroup.selectAll("polygon")
+                    .data(tessHexData)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i);
+
+                    })
+                    .attr("stroke-width", 2);
+
+            // The data to draw the 6 triangles inside the base hexagon
+            var nTri = 0;
+            var tessTriData = [];
+
+            for (k = 0; k < nbrTess; k++) {
+                for (j = 0; j < 6; j++) {
+                    tessTriData[nTri] = tessHexObj[k].trianglePointsString(j);
+                    nTri++;
+                }
+            }
+
+            var svgGrid4 = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgTessTriGroup = svgGrid4.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var tessTri = svgTessTriGroup.selectAll("polygon")
+                    .data(tessTriData)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(Math.trunc(i / 6));
+                    })
+
+                    .attr("stroke-width", 1);
+
+// Triangle Class /////////////////////////////////
+            var tKey = 3;
+            var tVx = [[1, 0], [2, 0], [1.5, Math.sqrt(3) / 2]];
+            var tCol = "#CC00DD";
+            var tVn = [[2, 0], [3, 0], [2.5, Math.sqrt(3) / 2]];
+
+            var tI = new Triangle( );
+            console.log(tI.key, tI.vCur, tI.c, tI.vNew);
+
+            var tJ = new Triangle(tKey, tVx, tCol);
+            console.log(tJ.key, tJ.vCur, tJ.c, tJ.vNew);
+
+            tI.key = tJ.key;
+            tI.vCur = tJ.vCur;
+            tI.c = tJ.c;
+            tI.vNew = tJ.vNew;
+            console.log(tI.key, tI.vCur, tI.c, tI.vNew);
+        </script>
+    </body>
+</html>

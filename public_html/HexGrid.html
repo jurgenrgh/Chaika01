@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>HexGrid</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="hexFunctions.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2>Hexagonal Tessellation</h2> 
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+
+            class Hexagon {
+                constructor(cx = 0, cy = 0, s = 1, scale = 1, c = "#ff0000") // center = (cx,cy), side = s, color = c
+                {
+                    this.cx = cx * scale;
+                    this.cy = cy * scale;
+                    this.s = s * scale;
+                    this.c = c;
+                }
+                vertexX(i) {
+                    return (this.s * Math.cos(i * Math.PI / 3) + this.cx);
+                }
+                vertexY(i) {
+                    return (this.s * Math.sin(i * Math.PI / 3) + this.cy);
+                }
+                vertices(i) {
+                    var pt = [this.vertexX(i), this.vertexY(i)];
+                    //console.log(pt);
+                    return pt;
+                }
+
+                hexagonPointsArray() {
+                    var points = [];
+                    var j;
+
+                    for (j = 0; j < 6; j++) {
+                        points[j] = this.vertices(j);
+                        //console.log(j, points);
+                    }
+                    return points;
+                }
+
+                hexagonPointsString() {
+                    var points = this.hexagonPointsArray();
+                    var str = [];
+                    var j;
+                    //console.log(points);
+                    for (j = 0; j < 6; j++) {
+                        str[j] = points[j].join(",");
+                    }
+                    str = str.join(" ");
+                    //console.log(str);
+                    return str;
+                }
+
+                trianglePointsArray(i) {
+                    var points = [[this.cx, this.cy],
+                        [this.vertexX(i), this.vertexY(i)], [this.vertexX((i + 1) % 6), this.vertexY((i + 1) % 6)]];
+                    return points;
+                }
+
+                trianglePointsString(i) {
+                    var points = this.trianglePointsArray(i);
+                    var str = [];
+                    var j;
+
+                    for (j = 0; j < 3; j++) {
+                        str[j] = points[j].join(",");
+                    }
+                    str = str.join(" ");
+                    return str;
+                }
+            }
+
+            var gridRings = 2;
+
+            // The grid consists of a base hexagon surrounded by
+            // 1) ring 1 -> 6 neighbors -> large hexagon, each side = 2 small hexagons
+            // 2) ring 2 -> 12 neighbors -> large hexagon, each side = 3 small
+            // etc
+            //
+            function makeRingGrid(rings)
+            {
+                var n;
+
+                for (n = 0; n <= rings; n++) {
+
+                }
+            }
+            ///////////////////////////////////////////////////////////////////
+            // hexDecode(ix) //////////////////////////////////////////////////
+            // ////////////////////////////////////////////////////////////////
+            // The argument ix is an array of integers representing
+            //  a hexagon in the grid by specifying a path to it beginning
+            //  at the origin, i.e. at the base hexagon centered at (0,0).
+            //  
+            // The function converts this "index" to the euclidean coordinates
+            // of the center of the corresponding hexagon.
+            // 
+            // The coordinate system is normalized: The base hexagon is centered
+            // at (0,0) and side length = 1.
+            // 
+            // The array ix = [ix_0, ix_1, ... , ix_n] represents a path from
+            // the base to any other hexagon as follows:
+            // each ix_k, 0 <= ix_k < 6, gives the position of hexagon k+1
+            // on the path relative to hexagon k, its predecessor on the path,
+            // which is always a neighboring hexagon. Position 0 is at pi/6 (!!),
+            // i.e. the center of this hexagon is on the line through the
+            // the center of the predecessor with inclination pi/6.
+            //  
+            // Counting is counterclockwise. ix_0 is the position of a neighbor
+            // of the base, i.e. on ring 1; ix_1 on ring 2 etc.
+            //  
+            // ix = [x_0] and x_0 < 0 represents the base triangle.
+            //
+            // Returns [cx,cy] = eucl. coord. of center of hexagon with id = ix.
+            //
+            function hexDecode(ix) {
+                var i;
+                var xt = 0, yt = 0;
+
+                if (ix[0] < 0) {
+                    xt = 0;
+                    yt = 0;
+                } else {
+                    for (i = 0; i < ix.length; i++) {
+                        xt = xt + Math.sqrt(3) * Math.cos(Math.PI / 6 + ix[i] * Math.PI / 3);
+                        yt = yt + Math.sqrt(3) * Math.sin(Math.PI / 6 + iy[i] * Math.Pi / 3);
+                    }
+                }
+                return [xt, yt];
+            }
+
+            ////////////////////////////////////////////////////////////////////
+            // hexEncode(cx,cy)
+            //////////////////////////////////////////////////////////////////// 
+            // This is the inverse of hexDecode.
+            // The method is to find the neighbor that is closest to the 
+            // (cx,cy) at every step, beginning at the base.
+            // 
+            // The return value is the center of the hexagon containing [cx,cy]
+            //
+            function hexEncode(cx, cy) {
+                var more = true;
+
+                while (more) {
+
+                }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            // seqEncode(ix)
+            ///////////////////////////////////////////////////////////////////
+            // Returns the euclidean coordinates(cx,cy) of the hexagon with
+            // sequential index ix.
+            // 
+            // The hexagons are numbered by "ring":
+            // 0 - base
+            // 1...6 ring 1 beginning at pi/6
+            // 7...18; 19...36; 37...60 -> ring 2, 3, 4, 5 
+            ///////////////////////////////////////////////////////////////////
+            function seqEncode(ix)
+            {
+
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            // seqEncode(cx,cy)
+            ///////////////////////////////////////////////////////////////////
+            // Inverse of seqDecode. Given eucl. coordinates (cx,cy) of the
+            // center of a hexagon, returns the sequential index.
+            ///////////////////////////////////////////////////////////////////
+            function seqEncode(cx, cy)
+            {
+
+            }
+            ///////////////////////////////////////////////////////////////////
+            // Returns true(false) if p is inside(outside) the hexagon
+            // with center [cx,cy] and side length s
+            ///////////////////////////////////////////////////////////////////
+            function hexagonContains(p, cx = 0, cy = 0, s = 1) {
+                var v = [];
+                var t = false;
+
+                v = getHexVertices(cx, cy, s);
+                t = d3.polygonContains(v, p);
+
+                return t;
+            }
+            ///////////////////////////////////////////////////////////////////
+            // getHexNeighbors()
+            ///////////////////////////////////////////////////////////////////
+            // Gives the eucl. coordinates of the center of of the 6 nearest
+            // neighbors of the hexagon at the origin. Side length = 1.
+            // 
+            // Returns [[x_0,y_0],...,[x_5,y_5]], [x_0,y_0] at pi/6  
+            ///////////////////////////////////////////////////////////////////
+            function getHexNeighbors(cx = 0, cy = 0, s = 1) {
+
+                var v = [];
+                var i, a;
+
+                //console.log(cx, cy, s);
+
+                for (i = 0; i < 6; i++) {
+                    a = Math.PI / 6 + i * Math.PI / 3;
+                    v[i] = [cx + s * Math.sqrt(3) * Math.cos(a),
+                        cy + s * Math.sqrt(3) * Math.sin(a)];
+                }
+
+                return v;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            // getHexVertices(cx,cy)
+            ///////////////////////////////////////////////////////////////////
+            // Given the eucl. coordinates of the center of a hexagon, find
+            // the centers of the 6 vertices. Side length s.
+            // Returns [[x_0,y_0],...,[x_5,y_5]], [x_0,y_0] at pi/3   
+            ///////////////////////////////////////////////////////////////////
+            function getHexVertices(cx = 0, cy = 0, s = 1) {
+                var v = [];
+                var i;
+
+                for (i = 0; i < 6; i++) {
+                    v[i] = [cx + s * Math.cos(i * Math.PI / 3),
+                        cy + s * Math.sin(i * Math.PI / 3)];
+                }
+                return v;
+            }
+
+            //////////////////////////////////////////////////////////////////
+            // getHexRing(ixR)
+            /////////////////////////////////////////////////////////////////
+            // A bounded hexagonal grid is a large hexagon made up of small
+            // "elementary" hexagons. The former is made up of "rings". The
+            // outermost ring consists of the boundary, i.e. those elementary 
+            // hexagons that have fewer than 6 neighbors.
+            //
+            // Origin at [cx,cy]; hexagon side lenght = s.
+            //
+            //  ixR = ring index:
+            //  ixR = 0 => the base hexagon
+            //  ixR = 0 => the 6 neighbors of the base
+            //  ixR = n => the 6n neighbors of ring n-1
+            //  
+            //  returns array of 6n center coordinate pairs if n>0
+            //  returns origin hexagon if n =0
+            //
+            ///////////////////////////////////////////////////////////////////
+            function getHexRing(ixR, cx = 0, cy = 0, s = 1) {
+                var points = [[cx, cy]];  // points of outside ring
+                var pp = [[cx, cy]];      // cumulative all rings
+                var pt = [[cx, cy]];      // temporary for current ring
+                var tx, ty;
+                var i, j, k, m, n;
+                var v = [];
+                var inFlag;
+
+                v = getHexNeighbors();  // [cx, cy] 6 neighbors of origin by default
+                
+                if (ixR > 0) {
+                    n = 0;                                      // point count
+                    for (i = 1; i <= ixR; i++) {                // for each ring
+                        for (j = 0; j < pp.length; j++) {       // and for each hexagon already inside it
+                            for (k = 0; k < 6; k++) {           // and for the center of each of its neighbors
+                                tx = [pp[j][0] + s * v[k][0]];
+                                ty = [pp[j][1] + s * v[k][1]];
+                                console.log(i, j, k, n, s, tx, ty);
+                                inFlag = false;
+                                for (m = 0; m < pp.length; m++) { // check whether it is inside or outside 
+
+                                    if (hexagonContains([pp[m][0], pp[m][1]], tx, ty, s))
+                                    {
+                                        inFlag = true;
+                                    }
+                                }
+                                if(!inFlag)
+                                {
+                                    pt[n] = [tx, ty];            //if outside put it in temporary array
+                                    console.log(i, j, k, n, s, tx, ty);
+                                    n++;
+                                
+                                }
+                            }
+                        }
+                        pt.sort(function (a, b) {
+                            return (a[0] * b[1] - a[1] * b[0]);
+                        });
+                        pt.forEach(function (element) {
+                            pp.push(element);
+                        });
+                        pt.splice(0);  //clear the temporary array
+                    }
+                    console.log(pt);
+                }
+                //return(points);
+                return(pp); //all the points of all the rings
+            }
+
+            ////////////////////////////////////////////////////////////////////
+            // return true if [px,py] in hexagon with center at c and side 
+            // length s.
+            ////////////////////////////////////////////////////////////////////
+            function hexagonContains(c, px, py, s)
+            {
+                var v = [];
+                //console.log(c, px, py, s);
+                v = getHexVertices(c[0], c[1], s);
+                //console.log(v);
+                if (d3.polygonContains(v, [px, py])) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function gcolor(n) {  //google color scheme
+                var colors_g = ["#3366cc", "#dc3912", "#ff9900", "#109618",
+                    "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e",
+                    "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
+                    "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+                return colors_g[n % colors_g.length];
+            }
+///////////////////// Output /////////////////
+
+            var svgW = 600;    //svg width
+            var svgH = 600;    //svg height
+            var originX = svgW / 2;
+            var originY = svgH / 2;
+            var i, j, k;
+            var ss = Math.min(svgW, svgH) / 12;
+            var hexBase = new Hexagon(originX, originY, ss);
+
+            var hexRing01Centers = getHexRing(1, originX, originY, ss);
+            var hexRing01Obj = [];
+            var hexRing01String = [];
+
+            for (i = 0; i < hexRing01Centers.length; i++)
+            {
+                var cx = parseFloat(hexRing01Centers[i][0]);
+                var cy = parseFloat(hexRing01Centers[i][1]);
+                console.log(cx, cy);
+                hexRing01Obj[i] = new Hexagon(cx, cy, ss);
+                hexRing01String[i] = hexRing01Obj[i].hexagonPointsString();
+                console.log(i, hexRing01String[i]);
+            }
+
+
+            var hexString = hexBase.hexagonPointsString();
+
+            var svgGrid = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var hexagons = svgGrid.selectAll("polygon")
+                    //.data([hexString])
+                    .data(hexRing01String)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return d;
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i);
+
+                    })
+                    .attr("stroke-width", 2);
+
+
+
+////////////////////// Test Logs /////////////////
+            // var hex0 = new Hexagon(0, 0, 1);
+
+            //console.log(hex0.cx, hex0.cy, hex0.s, hex0.vertexX(0));
+            //for (j = 0; j < 6; j++)
+            //{
+            //    console.log(j, hex0.vertexX(j), hex0.vertexY(j));
+            //    console.log(j, hex0.trianglePointsArray(j));
+            //    console.log(j, hex0.trianglePointsString(j));
+            // }
+        </script>
+
+    </body>
+</html>

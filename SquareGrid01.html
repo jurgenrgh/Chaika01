@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>SquareGrid01</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="geometricFunctions.js"></script>
+        <script type="text/javascript" src="TessClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2> Square Grid Pass 1: Squares as Data, not Tiles </h2> 
+        <div id="grid">
+        </div>
+
+        <script type="text/javascript">
+
+            var svgW = 640; //svg width
+            var svgH = 640; //svg height
+            var originX = svgW / 2;
+            var originY = svgH / 2;
+            var i, j, k, m, c;
+            var ss = Math.min(svgW, svgH) / 16; //side length of polygons
+            var moveMarkRadius = 6;
+
+            //Each square is specified by its center.
+            //For each x-value a range of y-values. Side length = 1.
+            //
+            //8x8 square:  
+            var squareGridData88 = [
+                {x: -4, y1: -4, y2: +3},
+                {x: -3, y1: -4, y2: +3},
+                {x: -2, y1: -4, y2: +3},
+                {x: -1, y1: -4, y2: +3},
+                {x: 0, y1: -4, y2: +3},
+                {x: +1, y1: -4, y2: +3},
+                {x: +2, y1: -4, y2: +3},
+                {x: +3, y1: -4, y2: +3}];
+
+            //Color specified by integer values
+            //Actual colors can be assigned later; currently
+            //index into gcolor is used 
+            var squareGridColors88 = [
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0]
+            ];
+
+            //A move in the square grid is defined by specifying
+            //the center [x0,y0] of the square that is to be moved
+            //to the point [x1,y1], rotated by 0,1,2,3 times pi/2;
+            //the angle may be negative or positive.
+            //
+            // The following specifies that 4 unit squares with
+            // a common vertex at [0,0] are to be rotated about the
+            // origin by +90 degrees.
+            // 
+            var square22MoveDef = [
+                {x0: +0.5, y0: +0.5, x1: -0.5, y1: +0.5, rot: +1},
+                {x0: -0.5, y0: +0.5, x1: -0.5, y1: -0.5, rot: +1},
+                {x0: -0.5, y0: -0.5, x1: +0.5, y1: -0.5, rot: +1},
+                {x0: +0.5, y0: -0.5, x1: +0.5, y1: +0.5, rot: +1}
+            ];
+
+            // Specification for the admissible moves
+            // Each entry = 1 declares the lower left hand corner of 
+            // the specified square as the center of a 2x2 rotation
+            var square22MoveCenters = [
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1, 1, 1],
+                [0, 0, 0, 0, 0, 0, 0, 0]
+            ];
+            
+            
+            ///////////////////////////////////////////////////////////////
+            // Draw square grid tessellation
+            ///////////////////////////////////////////////////////////////
+            var sqGridObj = new SquarePolyGrid(squareGridData88, square22MoveCenters, squareGridColors88, ss);
+            var svgSquares = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+            var svgSquaresGroup = svgSquares.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+            var squares = svgSquaresGroup.selectAll("polygon")
+
+                    .data(sqGridObj.square, function (d, i) {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        var ix = d.newIxTile;
+                        //Points retrieved from Data object  
+                        //return sqGridObj.tileVertexString(sqGridObj.square[ix].newIxTile);
+                        return sqGridObj.tileVertexString(ix);
+                        //return sqGridObj.tileVertexString(d.square.newIxTile);
+                    })
+
+                    .attr("fill", function (d, i) {
+                        var ix = d.squareIx;
+                        //return gcolor(sqGridObj.square[ix].color);
+                        return gcolor(d.color);
+                    })
+                    .attr("stroke", "darkgray")
+                    .attr("stroke-width", 2);
+            var moveMarks = svgSquaresGroup.selectAll("circle")
+                    //.data([hexString])
+                    //.data(sqGridObj.sqString)
+                    .data(sqGridObj.tile, function (d, i) {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return (d.x + ss / 2);
+                    })
+                    .attr("cy", function (d) {
+                        return (d.y - ss / 2);
+                    })
+                    .attr("r", function (d, i) {
+                        if (d.move > 0)
+                            return(moveMarkRadius);
+                        else
+                            return 0;
+                    })
+
+                    .style("fill", "none")
+                    .attr("stroke", "darkgray")
+                    .attr("stroke-width", 2);
+                    //.on("mouseover", handleMouseOver)
+                    //.on("mouseout", handleMouseOut)
+                    //.on("click", handleSquareClick);
+        </script>
+
+    </body>
+</html>

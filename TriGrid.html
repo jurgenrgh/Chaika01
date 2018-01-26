@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TriGrid</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="hexFunctions.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2> Triangular Tessellation </h2>
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+
+            var i, j, k;
+            var meshTri = [];
+            var v = [];
+            //SVG Width and height
+            var w = 900;
+            var h = 900;
+
+            var s = 45;                         //triangle side length
+            var a = s * Math.sqrt(3) / 2;       //triangle altitude
+            var nWidth = Math.trunc(0.5 + (w / s) / 2);               //nbr of triangles horizontally
+            var nHeight = Math.trunc(0.5 + (h / s) / 2);              //nbr of triangles upward
+
+            class Triangle {
+                constructor(v, rot = 0, scale = 1, c = "#ff0000")
+                {
+                    var i;
+                    var vt = [];
+                    this.v = v;
+                    //console.log(this.v);
+                    for(i = 0; i < 3; i++){
+                        vt[i] = rotateRect(this.v[i], this.v[0], rot);
+                    } 
+                    //console.log(vt);
+                    this.v = vt.map(function (d) {
+                        return [d[0] * scale, d[1] * scale];
+                    });
+                    //console.log(this.v);
+                    this.c = c;
+                }
+
+                trianglePointsString() {
+                    var str = [];
+                    var j;
+
+                    for (j = 0; j < 3; j++) {
+                        str[j] = this.v[j].join(",");
+                    }
+                    str = str.join(" ");
+                    return str;
+                }
+            }
+
+            for (i = 0; i < nWidth; i++) {
+                meshTri[i] = [];
+                for (j = 0; j < nHeight; j++) {
+                    let p1 = triToRect([i * s, j * s]);
+                    let p2 = triToRect([(i + 1) * s, j * s]);
+                    let p3 = triToRect([i * s, (j + 1) * s]);
+                    v = [p1, p2, p3];
+                    //console.log(i,j,v);
+                    meshTri[i][j] = new Triangle(v);
+                    //console.log(i,j,meshTri[i][j].v);
+                }
+            }
+
+            var svgGrid = d3.select("#grid").append("svg")
+                    .attr("width", w)
+                    .attr("height", h)
+                    .style("border", "1px solid black")
+                    .append("g")
+                    .attr("transform", "translate(100,100)"); //shift the origin
+
+            var pts = svgGrid.selectAll("polygon")
+                    .data(d3.range(nWidth * nHeight))
+                    .enter()
+                    .append("polygon")
+                    .attr("points", triPoints)
+                    .attr("stroke", "black")
+                    .attr("fill", function (d, i) {
+                        return gcolor(i);
+                    })
+                    .attr("stroke-width", 2);
+
+            function triPoints(d) {
+                var i = Math.trunc(d / nWidth);
+                var j = d % nWidth;
+                //console.log(i,j,d,nWidth,meshTri[i][j].v);
+                //console.log(i, j, d, nWidth, meshTri[i][j].trianglePointsString());
+                return meshTri[i][j].trianglePointsString();
+            }
+
+        </script>
+    </body>
+</html>

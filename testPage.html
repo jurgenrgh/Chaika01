@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TestPage</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="hexFunctions.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+
+    <body>
+        <h2> Various Tests </h2>
+        <div>
+            <svg width="200" height="200">
+            <circle cx="20" cy="20" r="20" fill="green" />
+            <rect x="110" y="110" height="30" width="30" fill="blue" />
+            <circle cx="70" cy="70" r="20" fill="purple" />
+            <rect x="160" y="160" height="30" width="30" fill="red" />
+            </svg>
+        </div>
+
+        <div>
+            <svg width="200" height="200">
+            <g transform="translate(80,0)">
+            <circle cx="20" cy="20" r="20" fill="green" />
+            <circle cx="70" cy="70" r="20" fill="purple" />
+            </g>
+            <g>
+            <rect x="110" y="110" height="30" width="30" fill="blue" />
+            <rect x="160" y="160" height="30" width="30" fill="red" />
+            </g>
+            </svg>
+        </div>
+
+        <script type="text/javascript">
+            class Trial {
+                constructor(nbr = 1, arr = [1, 2, 3]) {
+
+                    this.nbr = nbr;
+                    this.arr = arr;
+                    this.prop = "property";
+                    this.vect = [];
+                }
+
+                changeNbr(n) {
+                    this.nbr = n;
+                    console.log(this.prop, this.nbr, this.arr, this.vect);
+                }
+                changeArr(v) {
+                    var i;
+                    for (i = 0; i < v.length; i++) {
+                        this.arr[i] = v[i];
+                    }
+                    console.log(this.prop, this.nbr, this.arr, this.vect);
+                }
+                changeVect(v) {
+                    var i;
+                    for (i = 0; i < v.length; i++) {
+                        this.vect[i] = v[i];
+                    }
+                    console.log(this.prop, this.nbr, this.arr, this.vect);
+                }
+            }
+
+            class Triangle {
+                constructor(key = 0, v = [[0, 0], [1, 0], [0.5, Math.sqrt(3) / 2]], c = "#00ff00") {
+                    this.key = key; // Key for D3 selection (=array index of instance)
+                    this.vCur = v; // Current vertices
+                    this.c = c; // Color
+                    this.vNew = [];  // Vertices to which this triangle is being moved.
+                    // when move done - these become current
+                    console.log(this.vCur, this.vNew);
+                }
+
+                updateCoord() {
+                    var i;
+                    for (i = 0; i < 3; i++) {
+                        this.vCur[i] = this.vNew[i];
+                    }
+                    console.log(this.vCur, this.vNew);
+                }
+
+                initCoord() {
+                    var i;
+                    for (i = 0; i < 3; i++) {
+                        this.vNew[i] = this.vCur[i];
+                    }
+                    console.log(this.vCur, this.vNew);
+                }
+
+                changeCur(v) {
+                    var i;
+                    for (i = 0; i < 3; i++) {
+                        this.vCur[i] = v[i];
+                    }
+                    console.log(this.vCur, this.vNew, v);
+                }
+                
+                changeNew(v) {
+                    var i;
+                    for (i = 0; i < 3; i++) {
+                        this.vNew[i] = v[i];
+                    }
+                    console.log(this.vCur, this.vNew, v);
+                }
+
+                //String of vertices for current polygon "points" attribute
+                vCurString() {
+                    var points = this.vCur;
+                    var str = [];
+                    var j;
+
+                    //console.log(points);
+                    for (j = 0; j < 3; j++) {
+                        str[j] = points[j].join(",");
+                    }
+                    str = str.join(" ");
+                    //console.log(str);
+                    return str;
+                }
+
+                //String of vertices for new polygon "points" attribute
+                vNewString() {
+                    var points = this.vNew;
+                    var str = [];
+                    var j;
+
+                    //console.log(points);
+                    for (j = 0; j < 3; j++) {
+                        str[j] = points[j].join(",");
+                    }
+                    str = str.join(" ");
+                    //console.log(str);
+                    return str;
+                }
+            }
+
+            var circleData = [
+                {"cx": 20, "cy": 20, "radius": 20, "color": "green"},
+                {"cx": 70, "cy": 70, "radius": 20, "color": "purple"}];
+
+
+            var rectangleData = [
+                {"rx": 110, "ry": 110, "height": 30, "width": 30, "color": "blue"},
+                {"rx": 160, "ry": 160, "height": 30, "width": 30, "color": "red"}];
+
+            var svgContainer = d3.select("body").append("svg")
+                    .attr("width", 200)
+                    .attr("height", 200);
+
+//Add a group to hold the circles
+            var circleGroup = svgContainer.append("g")
+                    .attr("transform", "translate(80,0)");
+
+
+//Add circles to the circleGroup
+            var circles = circleGroup.selectAll("circle")
+                    .data(circleData)
+                    .enter()
+                    .append("circle");
+
+            var circleAttributes = circles
+                    .attr("cx", function (d) {
+                        return d.cx;
+                    })
+                    .attr("cy", function (d) {
+                        return d.cy;
+                    })
+                    .attr("r", function (d) {
+                        return d.radius;
+                    })
+                    .style("fill", function (d) {
+                        return d.color;
+                    });
+
+// * Note * that the rectangles are added to the svgContainer, not the circleGroup
+            var rectangles = svgContainer.selectAll("rect")
+                    .data(rectangleData)
+                    .enter()
+                    .append("rect");
+
+            var rectangleAttributes = rectangles
+                    .attr("x", function (d) {
+                        return d.rx;
+                    })
+                    .attr("y", function (d) {
+                        return d.ry;
+                    })
+                    .attr("height", function (d) {
+                        return d.height;
+                    })
+                    .attr("width", function (d) {
+                        return d.width;
+                    })
+                    .style("fill", function (d) {
+                        return d.color;
+                    });
+
+            var testArr1 = [[1,2],[3,4],[5,6]];
+            var testArr2 = [[91,92],[93,94],[95,96]];
+            
+            tri = new Triangle(1, testArr1);
+            //setTimeout(function(){tri.changeNew(testArr1);}, 3000);
+            //tri.changeNew(testArr1);
+            //tri.changeCur(testArr2);
+            
+        </script>
+    </body>
+</html>

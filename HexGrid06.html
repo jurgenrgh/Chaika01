@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>HexGrid06</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="geometricFunctions.js"></script>
+        <script type="text/javascript" src="TessClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2> Hex Grid Pass 6: New and Better Classes </h2> 
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+
+            var svgW = 640;             //svg width
+            var svgH = 640;             //svg height
+            var originX = svgW / 2;
+            var originY = svgH / 2;
+            var i, j, k;
+            var ss = Math.min(svgW, svgH) / 16; //side length of polygons
+
+            var triPointGridData = [
+                {x: -3, y1: 0, y2: 6},
+                {x: -2, y1: -1, y2: 5},
+                {x: -1, y1: -2, y2: 4},
+                {x: 0, y1: -3, y2: 3},
+                {x: +1, y1: -4, y2: 2},
+                {x: +2, y1: -5, y2: 1},
+                {x: +3, y1: -6, y2: 0}];
+
+            //Each square is specified by its center
+            //For each x-value a range of y-values
+            var squareGridData = [
+                {x: -6, y1: 0, y2: 0},
+                {x: -5, y1: -1, y2: +1},
+                {x: -4, y1: -2, y2: +2},
+                {x: -3, y1: -3, y2: +3},
+                {x: -2, y1: -4, y2: +4},
+                {x: -1, y1: -5, y2: +5},
+                {x: 0, y1: -6, y2: +6},
+                {x: +1, y1: -5, y2: +5},
+                {x: +2, y1: -4, y2: +4},
+                {x: +3, y1: -3, y2: +3},
+                {x: +4, y1: -2, y2: +2},
+                {x: +5, y1: -1, y2: +1},
+                {x: +6, y1: 0, y2: 0}];
+
+            //13x13 square  
+            var squareGridData13 = [
+                {x: -6, y1: -6, y2: +6},
+                {x: -5, y1: -6, y2: +6},
+                {x: -4, y1: -6, y2: +6},
+                {x: -3, y1: -6, y2: +6},
+                {x: -2, y1: -6, y2: +6},
+                {x: -1, y1: -6, y2: +6},
+                {x:  0, y1: -6, y2: +6},
+                {x: +1, y1: -6, y2: +6},
+                {x: +2, y1: -6, y2: +6},
+                {x: +3, y1: -6, y2: +6},
+                {x: +4, y1: -6, y2: +6},
+                {x: +5, y1: -6, y2: +6},
+                {x: +6, y1: -6, y2: +6}];
+
+            //8x8 square  
+            var squareGridData88 = [
+                {x: -4, y1: -4, y2: +3},
+                {x: -3, y1: -4, y2: +3},
+                {x: -2, y1: -4, y2: +3},
+                {x: -1, y1: -4, y2: +3},
+                {x: 0, y1: -4, y2: +3},
+                {x: +1, y1: -4, y2: +3},
+                {x: +2, y1: -4, y2: +3},
+                {x: +3, y1: -4, y2: +3}];
+
+            var squareGridColors88 = [
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0]
+            ];
+
+
+
+            //A move in the square grid is defined by specifying
+            //the center [x0,y0] of the square that is to be moved
+            //to the point [x1,y1], rotated by 0,1,2,3 times pi/2;
+            //the angle may be negative or positive.
+            //
+            // The following specifies that 4 unit squares with
+            // a common vertex at [0,0] are to be rotated about the
+            // origin by +90 degrees.
+            // 
+            var square22MoveDef = [
+                {x0: +0.5, y0: +0.5, x1: -0.5, y1: +0.5, rot: +1},
+                {x0: -0.5, y0: +0.5, x1: -0.5, y1: -0.5, rot: +1},
+                {x0: -0.5, y0: -0.5, x1: +0.5, y1: -0.5, rot: +1},
+                {x0: +0.5, y0: -0.5, x1: +0.5, y1: +0.5, rot: +1}
+            ];
+
+            // This list is interpreted to mean that each specified coordinate
+            // pair is the center of a move. The move itelf is specified
+            // by the MoveDef, which is formulated relative to [0,0].
+            var square22MoveOrigins = [[-0.5, -0.5], [0.5, -0.5], [-0.5, 0.5], [-1.5, -0.5], [-0.5, -1.5]];
+
+            ///////////////////////////////////////////////////////////////
+            // Draw square grid points
+            ///////////////////////////////////////////////////////////////
+            var radius = 6;
+            var s = 32;
+            var oldColor = "red";
+            var sqPointGridObj = new SquarePointGrid(squareGridData, s);
+            //console.log(sqPointGridObj.point);
+
+            var svgSqPoints = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black")
+                    .on("click", handlePointMouseClick);
+
+            var svgSqPointsGroup = svgSqPoints.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+
+            var circles = svgSqPointsGroup.selectAll("circle")
+                    .data(sqPointGridObj.point)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return d.x;
+                    })
+                    .attr("cy", function (d) {
+                        return d.y;
+                    })
+                    .attr("r", radius)
+
+                    .style("fill", function (d, i) {
+                        return gcolor(i);
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2)
+                    .on("mouseover", handlePointMouseOver)
+                    .on("mouseout", handlePointMouseOut);
+
+
+            // Select element, change color and size
+            function handlePointMouseOver(d, i) {
+                curSel = d3.select(this);
+                oldColor = curSel.style("fill");
+                curSel.attr("r", radius * 2)
+                        .style("fill", "red");
+
+            }
+
+            //Select element, change back to old color and size   
+            function handlePointMouseOut(d, i) {
+                curSel = d3.select(this)
+                        .style("fill", oldColor)
+                        .attr("r", radius);
+            }
+
+            //Find nearest and mark
+            function handlePointMouseClick(d, i) {
+                var q = [];
+                var p = d3.mouse(this);
+                p[0] = p[0] - originX;
+                p[1] = p[1] - originY;
+                var key = sqPointGridObj.getKey(p);
+                q = sqPointGridObj.getXY(key);
+                //document.elementFromPoint(q[0], q[1]).click();
+                //console.log(key, p, q);
+            }
+
+            ///////////////////////////////////////////////////////////////
+            // Draw square grid tessellation
+            ///////////////////////////////////////////////////////////////
+            var sqGridObj = new SquarePolyGrid(squareGridData88, squareGridColors88, ss);
+
+            var svgSquares = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgSquaresGroup = svgSquares.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var squares = svgSquaresGroup.selectAll("polygon")
+                    //.data([hexString])
+                    //.data(sqGridObj.sqString)
+                    .data(sqGridObj.tile, function (d, i) {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+                        return sqGridObj.tileVertexString(d.square.newIxTile); //Points retrieved from Data object  
+                    })
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(d.square.color);
+                    })
+                    .attr("stroke", "darkgray")
+                    .attr("stroke-width", 2)
+                    .on("click", handleSquareClick);
+
+            //The super-square with center closest to the click will
+            //be rotated by pi/2
+            function handleSquareClick(d, i) {
+
+                var p = d3.mouse(this);
+                //var q = [p[0] - originX, p[1] - originY];
+                //console.log(p);
+                var nearest = sqGridObj.getNearestSquareCenter(p);
+                var key = nearest.key;
+                if (key > 0) {
+                    var vx = sqGridObj.tileVertexArray(key);
+
+                    console.log(p, key, nearest, vx);
+
+                    var move = sqGridObj.squareMove(p, square22MoveDef, square22MoveOrigins);
+
+                    console.log(move);
+
+                    var squares2 = svgSquaresGroup.selectAll("polygon")
+                            .data(sqGridObj.tile, function (d, i) {
+                                return d.key;
+                            })
+                            .transition()
+                            .duration(1000)
+                            .attr("points", function (d, i) {
+                                return sqGridObj.tileVertexString(d.square.newIxTile);
+
+                            })
+                            .attr("stroke", "darkgray")
+                            .attr("fill", function (d, i) {
+                                return gcolor(d.square.color);
+                            })
+                            .attr("stroke-width", 2)
+                            .on("end", function (d,i) {
+                                d.square.update();
+                                //for (k = 0; k < sqGridObj.nbrTiles; k++) {
+                                //    sqGridObj.tile[k].square.update();}
+                                
+                            });
+                }
+            }
+
+
+        </script>
+    </body>
+</html>

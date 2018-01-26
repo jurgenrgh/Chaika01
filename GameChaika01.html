@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Game Chaika 01</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <div id="game">   </div>
+
+        <script type="text/javascript">
+            //SVG Width and height
+            var w = 600;
+            var h = 600;
+
+            var r = 30;                     //small triangle side length
+            var s = Math.min(w, h) - 4 * r;  //enclosing triangle side length
+            var a0 = r * Math.sqrt(3) / 2;     //small triangle altitude
+            var a = s * Math.sqrt(3) / 2;     //encl. triangle altitude
+            var v0 = [[r, r + a], [r + (s / 2), r + (2 * a / 3)], [r + s, r + a], [r + (s / 2), r]]; //Centers of 4 circles rel to (0,0) 
+
+            var v = v0.slice();
+            var ix = [0, 1, 2, 3];          //current occupant in selection position
+
+            var poly = [[v0[1], v0[2], v0[3]], [v0[0], v0[1], v0[3]], [v0[0], v0[2], v0[1]], [v0[0], v0[2], v0[3]]];
+            var poly1 = [[v0[1], v0[2], v0[3]], [v0[0], v0[1], v0[3]], [v0[0], v0[2], v0[1]]];
+            var poly2 = [[v0[0], v0[1], v0[3]], [v0[0], v0[2], v0[1]], [v0[0], v0[2], v0[3]]];
+            tri = [[[0, 0], [r, 0], [r / 2, a0]]];
+            var svg = d3.select("#game").append("svg")
+                    .attr("width", w)
+                    .attr("height", h);
+
+            var circles = svg.selectAll("circle")
+                    .data(v0)
+                    .enter()
+                    .append("circle");
+
+            var circleAttributes = circles
+                    .attr("cx", function (d) {
+                        return d[0];
+                    })
+                    .attr("cy", function (d) {
+                        return d[1];
+                    })
+                    .attr("r", r)
+
+                    .style("fill", function (d, i) {
+                        return colors_google(i);
+                    });
+
+//            var triangles = svg.selectAll("polygon")
+//                    .data(tri)
+//                    .enter()
+//                    .append("polygon")
+//
+//                    .attr("points", function (d, i) {
+//                        //console.log(d, i);
+//
+//                        dmap = d.map(function (d, i) {
+//                            return d.join(",");
+//                        }).join(" ");
+//                        //console.log(dmap);
+//                        return dmap;
+//                    })
+//
+//
+//                    .attr("stroke", "black")
+//                    .attr("fill", function (d, i) {
+//                        return colors_google(i);
+//
+//                    })
+//                    .attr("stroke-width", 2);
+//            
+//            var triangles = svg.selectAll("polygon")
+//                    .data(poly1)
+//                    .enter()
+//                    .append("polygon")
+//
+//                    .attr("points", function (d, i) {
+//                        //console.log(d, i);
+//
+//                        dmap = d.map(function (d, i) {
+//                            return d.join(",");
+//                        }).join(" ");
+//                        //console.log(dmap);
+//                        return dmap;
+//                    })
+//
+//                    .attr("stroke", "black")
+//                    .attr("fill", function (d, i) {
+//                        return colors_google(i);
+//
+//                    })
+//                    .attr("stroke-width", 2);
+
+            svg.on("click", function () {
+
+                var ix2 = []; //= [ix[0], ix[1], ix[2], ix[3]];
+                var v2 = [];
+                var coords = d3.mouse(this);
+                if (d3.polygonContains(poly[0], coords))
+                {
+                    //console.log("poly0");
+                    ix2 = [0, 2, 3, 1];
+                    //                  console.log(ix2);
+                }
+                if (d3.polygonContains(poly[1], coords))
+                {
+                    //console.log("poly1");
+                    ix2 = [1, 3, 2, 0];
+//                   console.log(ix2);
+                }
+                if (d3.polygonContains(poly[2], coords))
+                {
+                    //console.log("poly2");
+                    ix2 = [2, 0, 1, 3];
+                    //                    console.log(ix2);
+                }
+                if (!d3.polygonContains(poly[3], coords))
+                {
+                    //console.log("poly3");
+                    ix2 = [2, 1, 3, 0];
+                    //                    console.log(ix2);
+                }
+                v2 = [v[ix2[ix[0]]], v[ix2[ix[1]]], v[ix2[ix[2]]], v[ix2[ix[3]]]];
+                d3.selectAll("circle")
+                        .data(v2)
+                        .transition()
+                        .duration(1000)
+                        .attr("cx", function (d) {
+                            return d[0];
+                        })
+                        .attr("cy", function (d) {
+                            return d[1];
+                        })
+                        .attr("r", r);
+                //console.log(ix);  
+                var tem = [ix2[ix[0]], ix2[ix[1]], ix2[ix[2]], ix2[ix[3]]];
+                ix = [tem[0], tem[1], tem[2], tem[3]];
+                //console.log(ix);
+
+            });
+            function colors_google(n) {
+                var colors_g = ["#3366cc", "#dc3912", "#ff9900", "#109618",
+                    "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e",
+                    "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
+                    "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+                return colors_g[n % colors_g.length];
+            }
+        </script>
+    </body>
+</html>

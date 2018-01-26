@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div>TODO write content</div>
+        ///////////////////////////////////////////////////////////////////////////////            
+///////////// Functions  ////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////////////
+            // Rotate the vector p, given in rectilinear coordinates
+            // by theta radians about p0
+            // returns rect. coord. of rotated vector q
+            ////////////////////////////////////////////////////////////////////
+            function rotateRect(p, p0, theta)
+            {
+                var q = [];
+                //console.log(p,p0,theta);        
+                q[0] = p0[0] + (p[0]-p0[0]) * Math.cos(theta) - (p[1]-p0[1]) * Math.sin(theta);
+                q[1] = p0[1] + (p[0]-p0[0]) * Math.sin(theta) + (p[1]-p0[1]) * Math.cos(theta);
+                //console.log(p,p0,q,theta);
+                return q;
+            }
+
+            ////////////////////////////////////////////////////////////////////
+            // Rotate the vector p, given in triangular coordinates
+            // by theta radians about p0
+            // returns tri. coord. of rotated vector q
+            ////////////////////////////////////////////////////////////////////
+            function rotateTri(p, p0, theta)
+            {
+                var r = triToRect(p);
+                var s = rotateRect[r, p0, theta];
+                var q = rectToTri[s];
+
+                return q;
+            }
+            
+            ///////////////////////////////////////////////////////////////////
+            // Convert from triangular to rectilinear coordinates
+            ///////////////////////////////////////////////////////////////////
+            function triToRect(p) {
+                var q = [];
+
+                q[0] = p[0] + p[1] / 2;
+                q[1] = p[1] * Math.sqrt(3) / 2;
+
+                return q;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            // Convert from rectilinear to triangular coordinates
+            ///////////////////////////////////////////////////////////////////
+            function rectToTri(p) {
+                var q = [];
+
+                q[0] = p[0] - p[1] / Math.sqrt(3);
+                q[1] = p[1] * 2 / Math.sqrt(3);
+
+                return q;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+            // 20 "good" colors; i.e. colors with good contrast
+            // returns color[n mod 20]
+            ///////////////////////////////////////////////////////////////////
+            function gcolor(n) {
+                var colors_g = ["#3366cc", "#dc3912", "#ff9900", "#109618",
+                    "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e",
+                    "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
+                    "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+                return colors_g[n % colors_g.length];
+            }
+////////////////////////////////////////////////////////////////////////////////            
+            var circleData = [
+                {"cx": 20, "cy": 20, "radius": 20, "color": "green"},
+                {"cx": 70, "cy": 70, "radius": 20, "color": "purple"}];
+
+
+            var rectangleData = [
+                {"rx": 110, "ry": 110, "height": 30, "width": 30, "color": "blue"},
+                {"rx": 160, "ry": 160, "height": 30, "width": 30, "color": "red"}];
+
+            
+            
+            var svgContainer = d3.select("body").append("svg")
+                    .attr("width", 200)
+                    .attr("height", 200);
+
+//Add a group to hold the circles
+            var circleGroup = svgContainer.append("g")
+                    .attr("transform", "translate(80,0)");
+
+
+//Add circles to the circleGroup
+            var circles = circleGroup.selectAll("circle")
+                    .data(circleData)
+                    .enter()
+                    .append("circle");
+
+            var circleAttributes = circles
+                    .attr("cx", function (d) {
+                        return d.cx;
+                    })
+                    .attr("cy", function (d) {
+                        return d.cy;
+                    })
+                    .attr("r", function (d) {
+                        return d.radius;
+                    })
+                    .style("fill", function (d) {
+                        return d.color;
+                    });
+
+// * Note * that the rectangles are added to the svgContainer, not the circleGroup
+            var rectangles = svgContainer.selectAll("rect")
+                    .data(rectangleData)
+                    .enter()
+                    .append("rect");
+
+            var rectangleAttributes = rectangles
+                    .attr("x", function (d) {
+                        return d.rx;
+                    })
+                    .attr("y", function (d) {
+                        return d.ry;
+                    })
+                    .attr("height", function (d) {
+                        return d.height;
+                    })
+                    .attr("width", function (d) {
+                        return d.width;
+                    })
+                    .style("fill", function (d) {
+                        return d.color;
+                    });
+    </body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>HexGrid05</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="geometricFunctions.js"></script>
+        <script type="text/javascript" src="hexClasses.js"></script>
+        <script type="text/javascript" src="TessClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2> Hex Grid 5th Pass: Generalized Grids </h2> 
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+
+            var svgW = 640;             //svg width
+            var svgH = 640;             //svg height
+            var originX = svgW / 2;
+            var originY = svgH / 2;
+            var i, j, k;
+            var ss = Math.min(svgW, svgH) / 16; //side length of hexagons
+
+            var triPointGridData = [
+                {x: -3, y1: 0, y2: 6},
+                {x: -2, y1: -1, y2: 5},
+                {x: -1, y1: -2, y2: 4},
+                {x: 0, y1: -3, y2: 3},
+                {x: +1, y1: -4, y2: 2},
+                {x: +2, y1: -5, y2: 1},
+                {x: +3, y1: -6, y2: 0}];
+
+            //Each square is specified by a single corner [x,y]
+            //The other 3 corners are [x+1,y],[x+1,y+1],[x,y+1] 
+            //
+            var squareGridData = [
+                {x: -6, y1: 0, y2: 0},
+                {x: -5, y1: -1, y2: +1},
+                {x: -4, y1: -2, y2: +2},
+                {x: -3, y1: -3, y2: +3},
+                {x: -2, y1: -4, y2: +4},
+                {x: -1, y1: -5, y2: +5},
+                {x: 0, y1: -6, y2: +6},
+                {x: +1, y1: -5, y2: +5},
+                {x: +2, y1: -4, y2: +4},
+                {x: +3, y1: -3, y2: +3},
+                {x: +4, y1: -2, y2: +2},
+                {x: +5, y1: -1, y2: +1},
+                {x: +6, y1: 0, y2: 0}];
+
+
+            //A move in the square grid is defined by specifying
+            //the center [x0,y0] of the square that is to be moved
+            //to the point [x1,y1], rotated by 0,1,2,3 times pi/2;
+            //the angle may also be negative or positive.
+            //
+            var squareMoveDef = [{x0: 0, y0: 0, x1: 0, y1: 0, rot: +1},
+                {x0: 1, y0: 0, x1: 0, y1: 1, rot: +1},
+                {x0: 0, y0: 1, x1: -1, y1: 0, rot: +1},
+                {x0: -1, y0: 0, x1: 0, y1: -1, rot: +1},
+                {x0: 0, y0: -1, x1: 1, y1: 0, rot: +1},
+                {x0: 1, y0: 1, x1: -1, y1: 1, rot: +1},
+                {x0: -1, y0: 1, x1: -1, y1: -1, rot: +1},
+                {x0: -1, y0: -1, x1: 1, y1: -1, rot: +1},
+                {x0: 1, y0: -1, x1: 1, y1: -1, rot: +1}
+            ];
+
+
+            // Draws a small circle for every point of the grid
+            // specified by the data
+            var gridObj = new TriPointGrid(triPointGridData);
+
+            // Draw all the vertices of triangles in a specified region          
+            var svgPts = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgPtsGroup = svgPts.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var pts = svgPtsGroup.selectAll("circle")
+                    //.data([hexString])
+                    .data(gridObj.point)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return ss * (d.x + d.y / 2);
+                    })
+                    .attr("cy", function (d) {
+                        return ss * d.y * Math.sqrt(3) / 2;
+                    })
+                    .attr("r", 6)
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 3);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+
+            //Draw a triangle with lower lh vertex
+            //at each point of the point grid
+            //console.log(ss);
+            var trisObj = new TriGrid(triPointGridData, ss);
+            //console.log(trisObj.triString);
+
+            var svgTris = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgTrisGroup = svgTris.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var tris = svgTrisGroup.selectAll("polygon")
+                    //.data([hexString])
+                    .data(trisObj.triString)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+
+                        return d; //Points retrieved from Data object  
+                    })
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 3);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+
+            ///////////////////////////////////////////////////////////////
+            // Draw square grid tessellation
+            ///////////////////////////////////////////////////////////////
+            var sqGridObj = new SquareGrid(squareGridData, ss);
+            //console.log(trisObj.triString);
+
+            var svgSquares = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgSquaresGroup = svgSquares.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var squares = svgSquaresGroup.selectAll("polygon")
+                    //.data([hexString])
+                    .data(sqGridObj.sqString)
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i) {
+
+                        return d; //Points retrieved from Data object  
+                    })
+
+                    .attr("fill", function (d, i) {
+                        return gcolor(i % 4);
+                    })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2);
+            //.on("click", handleClick);
+
+            ///////////////////////////////////////////////////////////////
+            // Draw square grid points
+            ///////////////////////////////////////////////////////////////
+            var radius = 6;
+            var s = 32;
+            var oldColor = "red";
+            var sqPointGridObj = new SquarePointGrid(squareGridData, s);
+            //console.log(sqPointGridObj.point);
+
+            var svgSqPoints = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black")
+                    .on("click", handlePointMouseClick);
+
+            var svgSqPointsGroup = svgSqPoints.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+
+            var circles = svgSqPointsGroup.selectAll("circle")
+                    .data(sqPointGridObj.point)
+                    .enter()
+                    .append("circle")
+
+                    .attr("cx", function (d) {
+                        return d.x;
+                    })
+                    .attr("cy", function (d) {
+                        return d.y;
+                    })
+                    .attr("r", radius)
+
+                    .style("fill", function (d, i) {
+                        return gcolor(i);
+                    })
+
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 2)
+                    .on("mouseover", handlePointMouseOver)
+                    .on("mouseout", handlePointMouseOut);
+
+
+            // Select element, change color and size
+            function handlePointMouseOver(d, i) {
+                curSel = d3.select(this);
+                oldColor = curSel.style("fill");
+                curSel.attr("r", radius * 2)
+                        .style("fill", "red");
+
+            }
+
+            //Select element, change back to old color and size   
+            function handlePointMouseOut(d, i) {
+                curSel = d3.select(this)
+                        .style("fill", oldColor)
+                        .attr("r", radius);
+            }
+
+            //Find nearest and mark
+            function handlePointMouseClick(d, i) {
+                var q = [];
+                var p = d3.mouse(this);
+                p[0] = p[0] - originX;
+                p[1] = p[1] - originY;
+                var key = sqPointGridObj.getKey(p);
+                q = sqPointGridObj.getXY(key);
+                //document.elementFromPoint(q[0], q[1]).click();
+                console.log(key, p, q);
+            }
+
+        </script>
+    </body>
+</html>
