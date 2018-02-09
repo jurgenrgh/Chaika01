@@ -5,78 +5,136 @@ To change this template file, choose Tools | Templates
 and open the template in the editor.
 -->
 <html>
-    <title>Poly01</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="d3.js"></script>
-    <script type="text/javascript" src="geometricFunctions.js"></script>
-    <script type="text/javascript" src="ChaikaClasses.js"></script>
-    <link rel="shortcut icon" href="favicon.ico">
-    <style type="text/css">
-        /* No style rules here yet */		
-    </style>
-</head>
-<body>
-    <h2>Various Grid Configurations</h2>
+    <head>
+        <title>Poly01</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="geometricFunctions.js"></script>
+        <script type="text/javascript" src="ChaikaClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2>Various Grid Configurations</h2>
 
-    <div id="grid">   </div>
+        <div id="grid">   </div>
 
-    <script type="text/javascript">
-        var svgW = 960;             //svg width
-        var svgH = 960;             //svg height
-        var originX = svgW / 2;     //origin in svg
-        var originY = svgH / 2;
-        var i, j, k, m, c;
-        var ss = (Math.min(svgW, svgH) / 12);    //side length of polygons
-        var rr = ss / 8;                        //radius of vertex circles
+        <script type="text/javascript">
+            var svgW = 960;             //svg width
+            var svgH = 960;             //svg height
+            var originX = svgW / 2;     //origin in svg
+            var originY = svgH / 2;
+            var i, j, k, m, c;
+            var ss = (Math.min(svgW, svgH) / 12);    //side length of polygons
+            var rr = ss / 8;                        //radius of vertex circles
 
-        var triBase = new Basis([1, 0], [-0.5, Math.sqrt(3) / 2], [-0.5, -Math.sqrt(3) / 2]);
-        var sqrBase = new Basis([1, 0], [0, 1], [0, 0]);
-        
-        // The following defines an 8 by 8 square: 
-        var gridDataSq8x8 = [{x1: -4, x2: +3, y1: -4, y2: +3}];
-        // A color is assigned to each grid entry; distinct 
-        // integers indicate distinct colors 
-        var gridColorsSq8x8 = [
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0],
-            [1, 1, 1, 1, 0, 0, 0, 0]];
-        
-        var sqrGridPoints = new PointGrid(sqrBase, gridDataSq8x8, gridColorsSq8x8, ss);
-        
-        console.log(sqrGridPoints.points);
-        
-        var svgGrid = d3.select("#grid").append("svg")
-                .attr("width", svgW)
-                .attr("height", svgH)
-                .style("border", "1px solid black");
+            var triBase = new Basis([1, 0], [-0.5, Math.sqrt(3) / 2], [-0.5, -Math.sqrt(3) / 2]);
+            var sqrBase = new Basis([1, 0], [0, 1], [0, 0]);
 
-        var svgSqrGroup = svgGrid.append("g")
-                .attr("transform", "translate(" + originX + "," + originY + ")");
-        
-        var circles = svgSqrGroup.selectAll("circle")
-                    .data(sqrGridPoints.points)
+            // The following defines an 8 by 8 square: 
+            var gridDataSqr8x8 = [{x1: -4, x2: +3, y1: -4, y2: +3}];
+            // A color is assigned to each grid entry; distinct 
+            // integers indicate distinct colors 
+            var gridColorsSqr8x8 = [
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0],
+                [1, 1, 1, 1, 0, 0, 0, 0]];
+
+            // Base points of the tiles.
+            // There could be more than one polygonal
+            // form. These are distinguished by distinct
+            // integers.
+            // A tile might also be a circle centered at
+            // a base point. Circles are coded as "9", so
+            // there cannot be more than 8 different polygonal
+            // tiles.
+            var gridTileBasePointsSqr8x8 = [
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1]
+            ];
+
+            // Normalized tile: A polygon; the first point might
+            // be taken as reference; generally the reference point
+            // will be the center.
+            var normSqrTile = [[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5], [0.5, -0.5]];
+
+            var sqrGridPoints = new PointGrid(sqrBase, gridDataSqr8x8, gridColorsSqr8x8, normSqrTile, ss);
+
+            //console.log(sqrGridPoints.points);
+
+            var svgGrid = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgSqrGroup = svgGrid.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var polygons = svgSqrGroup.selectAll("polygon")
+                    .data(sqrGridPoints.points, function (d, i)
+                    {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("polygon")
+
+                    .attr("points", function (d, i)
+                    {
+                        var ix = d.newIxTile;
+                        //Points retrieved from Data object  
+                        //return sqGridObj.tileVertexString(sqGridObj.square[ix].newIxTile);
+                        return sqrGridPoints.tileVertexString(ix);
+                        //return sqGridObj.tileVertexString(d.square.newIxTile);
+                    })
+
+                    .attr("fill", function (d, i)
+                    {
+                        //var ix = d.squareIx;
+                        //return gcolor(sqGridObj.square[ix].color);
+                        return gcolor(d.color);
+                    })
+                    .attr("stroke", "darkgray")
+                    .attr("stroke-width", 2);
+
+            var circles = svgSqrGroup.selectAll("circle")
+                    .data(sqrGridPoints.points, function (d, i)
+                    {
+                        return d.key;
+                    })
+
                     .enter()
                     .append("circle")
-                    .attr("cx", function (d) {
-                        console.log(d);
+                    .attr("cx", function (d)
+                    {
+                        //console.log(d);
                         return d.x;
                     })
-                    .attr("cy", function (d) {
-                        console.log(d);
+                    .attr("cy", function (d)
+                    {
+                        //console.log(d);
                         return d.y;
                     })
                     .attr("r", rr)
                     .attr("stroke-width", 2)
-                    .style("fill", function (d, i) {
-                        console.log(d);
+                    .style("fill", function (d, i)
+                    {
+                        //console.log(d);
                         return gcolor(d.color);
                     });
-    </script>
-</body>
+        </script>
+    </body>
 </html>

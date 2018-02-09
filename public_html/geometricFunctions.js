@@ -224,6 +224,25 @@ function rectD(p, q) {
     return s2;
 }
 
+// Returns an array of coordinate pairs defining
+// the tile polygon.
+//
+// basis: base vectors; only the first 2 components are used
+// point: the base point of the tile; the normTile coordinate values are added 
+//          to this; so the first vertex of normTile might be [0,0] but
+//          it might also be e.g. the midpoint of the tile
+// normTile: an array of coordinate pairs defining a tile based at [0,0] with unit side
+// ss: side length of the polygon
+//
+function makeTile(basis, point, normTile, ss){
+    var vxList = [];
+    
+    for( var i = 0; i < normTile.length; i++ ){
+        vxList[i] = [point.x + ss * (normTile[i][0]*basis[0][0] + normTile[i][1]*basis[1][0]),
+                            point.y + ss * (normTile[i][0]*basis[0][1] + normTile[i][1]*basis[1][1])];
+    }
+    return vxList;
+}
 ///////////////////////////////////////////////////////////////////
 // 20 "good" colors; i.e. colors with good contrast
 // returns color[n mod 20]
@@ -235,3 +254,4 @@ function gcolor(n) {
         "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
     return colors_g[n % colors_g.length];
 }
+

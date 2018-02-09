@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Square01</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="d3.js"></script>
+        <script type="text/javascript" src="geometricFunctions.js"></script>
+        <script type="text/javascript" src="SquareClasses.js"></script>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style type="text/css">
+            /* No style rules here yet */		
+        </style>
+    </head>
+    <body>
+        <h2>Specialized Square Grid Configurations</h2>
+
+        <div id="grid">   </div>
+
+        <script type="text/javascript">
+            var svgW = 960;             //svg width
+            var svgH = 960;             //svg height
+            var originX = svgW / 2;     //origin in svg
+            var originY = svgH / 2;
+            var i, j, k, m, c;
+            var ss = (Math.min(svgW, svgH) / 12);    //side length of polygons
+            var rr = ss / 8;                        //radius of vertex circles
+
+            var transCount = 0;
+            var transRunning = false;
+
+            // The following defines an 8 by 8 square: 
+            var gridDataSqr8x8 = [{x1: -4, x2: +3, y1: -4, y2: +3}];
+
+            // Normalized tile: A polygon; the first point might
+            // be taken as reference; generally the reference point
+            // will be the center.
+            var normSqrTile = [[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5], [0.5, -0.5]];
+
+            var gridColorsSqr8x8 = [
+                [1, 1, 1, 1, 2, 2, 2, 2],
+                [1, 1, 1, 1, 2, 2, 2, 2],
+                [1, 1, 1, 1, 2, 2, 2, 2],
+                [1, 1, 1, 1, 2, 2, 2, 2],
+                [3, 3, 3, 3, 0, 0, 0, 0],
+                [3, 3, 3, 3, 0, 0, 0, 0],
+                [3, 3, 3, 3, 0, 0, 0, 0],
+                [3, 3, 3, 3, 0, 0, 0, 0]];
+
+
+            //A move in the square grid is defined by specifying
+            //the center [x0,y0] of the square that is to be moved
+            //to the point [x1,y1], rotated by 0,1,2,3 times pi/2;
+            //the angle may be negative or positive.
+            //
+            // The following specifies that 4 unit squares with
+            // a common vertex at [0.5,0.5] are to be rotated about this point
+            // by +90 degrees.
+            // 
+            var sqr2x2MoveDef = [
+                {x0: +0.0, y0: +0.0, x1: +1.0, y1: +0.0, rot: +1},
+                {x0: +1.0, y0: +0.0, x1: +1.0, y1: +1.0, rot: +1},
+                {x0: +1.0, y0: +1.0, x1: +0.0, y1: +1.0, rot: +1},
+                {x0: +0.0, y0: +1.0, x1: +0.0, y1: +0.0, rot: +1}
+            ];
+
+            //The following defines the rotation of 9 squares
+            //centered at [0,0]
+            var sqr3x3MoveDef = [
+                {x0: +0.0, y0: +0.0, x1: +0.0, y1: +0.0, rot: +1},
+                {x0: +1.0, y0: +0.0, x1: +1.0, y1: +1.0, rot: +1},
+                {x0: +1.0, y0: +1.0, x1: +0.0, y1: +1.0, rot: +1},
+                {x0: +0.0, y0: +1.0, x1: -1.0, y1: +1.0, rot: +1},
+                {x0: -1.0, y0: +1.0, x1: -1.0, y1: +0.0, rot: +1},
+                {x0: -1.0, y0: +0.0, x1: -1.0, y1: -1.0, rot: +1},
+                {x0: -1.0, y0: -1.0, x1: +0.0, y1: -1.0, rot: +1},
+                {x0: +0.0, y0: -1.0, x1: +1.0, y1: -1.0, rot: +1},
+                {x0: +1.0, y0: -1.0, x1: +1.0, y1: +0.0, rot: +1}
+            ];
+
+            // Specification for the admissible moves
+            // Each entry = 1 declares the corresponding grid point 
+            // to be the center of the first square listed in the
+            // move definition
+            var sqr2x2MoveRef = [
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0],
+                [1, 1, 1, 1, 1, 1, 1, 0]
+            ];
+
+            var sqr3x3MoveRef = [
+                [0, 0, 0, 0, 0, 0, 0, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0],
+                [0, 0, 0, 0, 0, 0, 0, 0]
+            ];
+
+            var gridPoints = makeSqrGrid(gridDataSqr8x8, gridColorsSqr8x8, sqr3x3MoveRef, normSqrTile, ss);
+            var sqrTokens = makeSqrTokens(gridPoints);
+
+            var svgGrid = d3.select("#grid").append("svg")
+                    .attr("width", svgW)
+                    .attr("height", svgH)
+                    .style("border", "1px solid black");
+
+            var svgSqrGroup = svgGrid.append("g")
+                    .attr("transform", "translate(" + originX + "," + originY + ")");
+
+            var squares = svgSqrGroup.selectAll("polygon")
+                    .data(sqrTokens, function (d, i)
+                    {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("polygon")
+                    .attr("points", function (d, i)
+                    {
+                        var ixTile = d.newIxTile;
+                        var tile = gridPoints[ixTile].tile;
+                        return tile;
+                    })
+                    .attr("stroke", "darkgray")
+                    .attr("stroke-width", 2)
+                    .attr("fill", function (d, i)
+                    {
+                        return gcolor(d.color);
+                    });
+
+            var clickCircles = svgSqrGroup.selectAll("circle")
+                    .data(sqrTokens, function (d, i)
+                    {
+                        return d.key;
+                    })
+                    .enter()
+                    .append("circle")
+                    .attr("cx", function (d)
+                    {
+                        var ixTile = d.newIxTile;
+                        var xTile = gridPoints[ixTile].x;
+                        return xTile;
+                    })
+                    .attr("cy", function (d)
+                    {
+                        var ixTile = d.newIxTile;
+                        var yTile = gridPoints[ixTile].y;
+                        return yTile;
+                    })
+                    .attr("r", rr)
+                    .attr("stroke-width", 2)
+                    .attr("fill", "transparent")
+                    .on("mouseover", handleSqrMouseOver)
+                    .on("mouseout", handleSqrMouseOut)
+                    .on("click", handleSqrClick);
+
+            //The super-square with center closest to the click will
+            //be rotated by pi/2
+            function handleSqrClick(d, i)
+            {
+                var movefromTileIx = [];
+                var movetoTileIx = [];
+                //if (transRunning === false)
+                {
+                    transCount = 0;
+                    transRunning = true;
+                    var p = d3.mouse(this);
+                    var ix = sqrTileIndex(p, gridPoints);
+                    var move = gridPoints[ix].move;
+                    var cx0 = gridPoints[ix].x;
+                    var cy0 = gridPoints[ix].y;
+                    //console.log(p, ix, cx0, cy0);
+                    if (move > 0)
+                    {
+                        //Get the index for each tile 
+                        for (var m = 0; m < sqr3x3MoveDef.length; m++)
+                        {
+                            var p0 = [sqr3x3MoveDef[m].x0, sqr3x3MoveDef[m].y0];
+                            var p1 = [sqr3x3MoveDef[m].x1, sqr3x3MoveDef[m].y1];
+                            //console.log[m,p0,p1]    
+                            movefromTileIx[m] = sqrTileIndex([cx0 + ss * p0[0], cy0 + ss * p0[1]], gridPoints);
+                            movetoTileIx[m] = sqrTileIndex([cx0 + ss * p1[0], cy0 + ss * p1[1]], gridPoints);
+                        }
+                        //console.log(movefromTileIx, movetoTileIx);
+                        for (var m = 0; m < sqr3x3MoveDef.length; m++)
+                        {
+                            var tix = gridPoints[movefromTileIx[m]].tokenIx;
+                            sqrTokens[tix].newIxTile = movetoTileIx[m];
+                        }
+                    }
+
+                    var squares2 = svgSqrGroup.selectAll("polygon")
+                            .data(sqrTokens, function (d, i)
+                            {
+                                return d.key;
+                            })
+
+                    var trans = squares2.transition()
+                            .duration(1000)
+                            .attr("points", function (d, i)
+                            {
+                                var ixTile = d.newIxTile;
+                                var tileString = gridPoints[ixTile].tile;
+                                return tileString;
+
+                            })
+
+                            .on("end", function (d, i)
+                            {
+                                transCount++;
+                                if (transCount >= trans.size())
+                                {
+                                    transCount = 0;
+                                    transRunning = false;
+                                }
+                                gridPoints[d.newIxTile].tokenIx = d.key;
+                                d.ixTile = d.newIxTile;
+                                //console.log("end", d.key, transCount, transRunning);
+                            });
+                }
+
+            }
+
+            function handleSqrMouseOver(d, i)
+            {
+                var ixTile = d.newIxTile;
+                var move = gridPoints[ixTile].move;
+                if (move > 0)
+                {
+                    d3.select(this).style("fill", gcolor(d.color + 1));
+                }
+            }
+
+            function handleSqrMouseOut(d, i)
+            {
+                var ixTile = d.newIxTile;
+                var move = gridPoints[ixTile].move;
+                if (move > 0)
+                {
+                    d3.select(this).style("fill", "transparent");
+                }
+            }
+        </script>
+    </body>
+</html>

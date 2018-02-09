@@ -39,24 +39,29 @@
 // The function normalize(x1,x2,x3) returns a vector [z1,z2,0]
 // equal to [x1,x2,x3]
 //
-class Basis {
-    constructor(e1, e2, e3) {
+class Basis
+{
+    constructor(e1, e2, e3)
+    {
         this.v = [[e1[0], e1[1]], [e2[0], e2[1]], [e3[0], e3[1]]];
     }
 
-    toRect(x1, x2, x3) {
+    toRect(x1, x2, x3)
+    {
         var rc = [];
         rc[0] = x1 * this.v[0][0] + x2 * this.v[1][0] + x3 * this.v[2][0];
         rc[1] = x1 * this.v[0][1] + x2 * this.v[1][1] + x3 * this.v[2][1];
         return rc;
     }
 
-    fromRect(x1, x2) {
+    fromRect(x1, x2)
+    {
         var z = [];
         var eps = 0.00001; // near zero
         var d = this.v[0][0] * this.v[1][1] - this.v[0][1] * this.v[1][0];
         //descriminant must be != 0 
-        if (Math.abs(d) < eps) {
+        if (Math.abs(d) < eps)
+        {
             d = 1; //if only happens if basis is invalid
         }
         z[0] = (x1 * this.v[1][1] - x2 * this.v[1][0]) / d;
@@ -64,11 +69,13 @@ class Basis {
         return z;
     }
 
-    normalize(x1, x2, x3) {
+    normalize(x1, x2, x3)
+    {
         var z = [];
         var eps = 0.00001; // near zero
         var d = this.v[0][0] * this.v[1][1] - this.v[0][1] * this.v[1][0];
-        if (Math.abs(d) < eps) {
+        if (Math.abs(d) < eps)
+        {
             d = 1; //if only happens if basis is invalid
         }
         var a = (this.v[2][0] * this.v[1][1] - this.v[2][1] * this.v[1][0]) / d;
@@ -89,57 +96,77 @@ class Basis {
 // Coordinates are normalized - x,y are integers - ss, if present
 // defines the actual distance unit; e.g. side length of a tile.
 //
+// normTile is a polygon given relative to [0,0] and with side length = 1
+//     
 // The useful function of the class is to define a potentially 
 // irregularly shaped regions and to enumerate them. 
 // 
 //
-class PointGrid {
-    constructor(basis, gridDef, gridColor, ss = 1) {
-        var i, j, n;
+class PointGrid
+{
+    constructor(basis, gridDef, gridColor, normTile, ss = 1)
+    {
+        var i, j, m, n;
         var k = 0;
 
         this.basis = basis.v;
         this.gridDef = gridDef;
         this.gridColor = gridColor;
+        this.normTile = normTile;
         this.dL = this.gridDef.length;
         this.points = [];
         this.nbrPoints = 0;
+        this.tiles = [];
+        this.nbrTiles = 0;
         this.ss = ss;
 
-        console.log(this.basis);
-        for (n = 0; n < this.dL; n++) {
-            for (j = this.gridDef[n].x1; j <= this.gridDef[n].x2; j++) {
-                for (i = this.gridDef[n].y1; i <= this.gridDef[n].y2; i++) {
-
+        //console.log(this.basis);
+        for (n = 0; n < this.dL; n++)
+        {
+            for (j = this.gridDef[n].x1; j <= this.gridDef[n].x2; j++)
+            {
+                for (i = this.gridDef[n].y1; i <= this.gridDef[n].y2; i++)
+                {
                     this.points[k] = {
                         key: k,
                         x: this.ss * (this.basis[0][0] * i + this.basis[1][0] * j),
                         y: this.ss * (this.basis[0][1] * i + this.basis[1][1] * j),
-                        color: this.gridColor[j - this.gridDef[n].x1][i - this.gridDef[n].y1]
+                        color: this.gridColor[j - this.gridDef[n].x1][i - this.gridDef[n].y1],
+                        //tile: new Tile(this.points[k], this.normTile, this.points[k].key, this.ss, this.points[k].key, this.points[k].color)
                     };
                     k++;
-                    console.log(n, i, j, k, this.points);
+                    //console.log(n, i, j, k, this.points);
                 }
             }
         }
         //console.log(this.points);
         this.nbrPoints = k;
+
+        // Generate the Tiles
+        for (k = 0; k < this.nbrPoints; k++)
+        {
+            this.tiles[k] = new Tile(this.points[k], this.normTile, this.points[k].key, this.ss, this.points[k].key, this.points[k].color);
+        }
+        this.nbrTiles = this.nbrPoints;
     }
 
 // From [x,y] return the key for the nearest
 // point. S is a scale factor
 //
-    getKey(p) {
+    getKey(p)
+    {
         var i;
         var d = rectD(p, [this.point[0].x, this.point[0].y]);
         var dd = d;
         var k = 0;
         //console.log(p, s, d, s * this.point[0].x, s * this.point[0].y);
 
-        for (i = 0; i < this.nbrPoints; i++) {
+        for (i = 0; i < this.nbrPoints; i++)
+        {
 //console.log(i, p, s, [s*this.point[0].x, s*this.point[0].y]);
             dd = rectD(p, [this.point[i].x, this.point[i].y]);
-            if (dd < d) {
+            if (dd < d)
+            {
                 k = i;
                 d = dd;
             }
@@ -148,11 +175,14 @@ class PointGrid {
         return k;
     }
 // Get xy-coordinates from the key
-    getXY(key) {
+    getXY(key)
+    {
         var i;
         var p = [];
-        for (i = 0; i < this.nbrPoints; i++) {
-            if (this.point[i].key === key) {
+        for (i = 0; i < this.nbrPoints; i++)
+        {
+            if (this.point[i].key === key)
+            {
                 p[0] = this.point[i].x;
                 p[1] = this.point[i].y;
             }
@@ -162,28 +192,40 @@ class PointGrid {
 }
 
 // A Tile is an elementary cell of the grid
-class Tile {
-    constructor(key = 0, ss = 1, ixToken = 0) {
-        this.key = key; // An invariant index
-        this.ss = ss; // Side length where the shape is a regular polyhedron
+class Tile
+{
+    constructor(point, normTile, key = 0, ss = 1, ixToken = 0, color = '#ff0000')
+    {
+        this.key = key;         // An invariant index
+        this.ss = ss;           // Side length where the shape is a regular polyhedron
         this.ixToken = ixToken; // The index of the current occupant of the tile
-        this.color = '#ff0000'; // Initial value. The token determines the foreground
-        // May be used as a background or reference color
+        this.color = color;     // Initial value. The token determines the foreground
+        this.point = point;
+        this.normTile = normTile;
         this.vxList = []; // List of vertices; 2D Euclidean
+
+        for (var i = 0; i < normTile.length; i++)
+        {
+            this.vxList[i] = [this.point.x + this.ss * this.normTile[i][0], this.point.y + this.ss * this.normTile[i][1]];
+        }
     }
 
-// Set color and vertex coordinates
-    init(vx, color) {
+    // Set color and vertex coordinates
+    init(vx, color)
+    {
         this.color = color;
-        for (var i = 0; i < vx.length; i++) {
+        for (var i = 0; i < vx.length; i++)
+        {
             this.vxList[i] = vx[i];
         }
     }
 }
 
 // A Tile is an elementary cell of the grid
-class Token {
-    constructor(key = 0, ss = 1, ixTile = 0) {
+class Token
+{
+    constructor(key = 0, ss = 1, ixTile = 0)
+    {
         this.key = key; // An invariant index
         this.ss = ss; // Side length where the shape is a regular polyhedron
         this.ixTile = ixTile; // The index of the current tile
@@ -195,22 +237,26 @@ class Token {
     }
 
 // Set color and vertex coordinates
-    init(color, angle, ixTile) {
+    init(color, angle, ixTile)
+    {
         this.ixTile = ixTile;
         this.color = color;
         this.angle = angle;
     }
 
 // Set color and vertex coordinates
-    update() {
+    update()
+    {
         this.ixTile = this.newIxTile;
         this.color = this.newColor;
         this.angle = this.newAngle;
     }
 }
 
-class Square {
-    constructor(ixGrid, angle, color) {
+class Square
+{
+    constructor(ixGrid, angle, color)
+    {
 //
 // Current Values
         this.key = ixGrid; //permanent id of this square
@@ -224,15 +270,18 @@ class Square {
     }
 
 //Values for new position and color
-    init(ixTile, angle, color) {
+    init(ixTile, angle, color)
+    {
         this.newIxTile = ixTile;
         this.newAngle = angle;
         this.newColor = color;
     }
 
 //New values become current
-    update() {
-        if (this.ixTile != this.newIxTile) {
+    update()
+    {
+        if (this.ixTile != this.newIxTile)
+        {
             console.log(this.ixTile, this.newIxTile);
         }
         this.ixTile = this.newIxTile;
@@ -241,14 +290,17 @@ class Square {
     }
 }
 
-function getGridPointsList(gridDef, gridColors, vBase, ss) {
+function getGridPointsList(gridDef, gridColors, vBase, ss)
+{
 
     var i, j;
     var nx, ny;
     var points = [];
     var k = 0;
-    for (i = 0; i < gridDef.length; i++) {
-        for (j = 0; j <= gridDef[i].y2 - gridDef[i].y1; j++) {
+    for (i = 0; i < gridDef.length; i++)
+    {
+        for (j = 0; j <= gridDef[i].y2 - gridDef[i].y1; j++)
+        {
             nx = gridDef[i].x;
             ny = gridDef[i].y1 + j;
             points[k] = {
@@ -266,7 +318,8 @@ function getGridPointsList(gridDef, gridColors, vBase, ss) {
 // there is a region (here it is a triangle), i.e.
 // a mouse click in this region triggers the corresponding move
 // 
-function getMoveClickRegions(gridDef, gridCol, moveDef, moveRef, vBase, ss) {
+function getMoveClickRegions(gridDef, gridCol, moveDef, moveRef, vBase, ss)
+{
     var i, j, n, m;
     var nx, ny;
     var x, y;
@@ -278,17 +331,22 @@ function getMoveClickRegions(gridDef, gridCol, moveDef, moveRef, vBase, ss) {
     var ngr = gridDef.length; //Number of grid rows
     var m = 0;
     // Get normalized list of vertices
-    for (n = 0; n < nnm; n++) {                         //for each move type
+    for (n = 0; n < nnm; n++)
+    {                         //for each move type
         nmv = moveDef[n].length; //nbr of vertices in the move 
-        for (i = 0; i < ngr; i++) {                     //for each grid row i and col j
-            for (j = 0; j <= gridDef[i].y2 - gridDef[i].y1; j++) {
-                if (moveRef[n][i][j] === 1) {           //if there is a move base point here
+        for (i = 0; i < ngr; i++)
+        {                     //for each grid row i and col j
+            for (j = 0; j <= gridDef[i].y2 - gridDef[i].y1; j++)
+            {
+                if (moveRef[n][i][j] === 1)
+                {           //if there is a move base point here
                     nx = gridDef[i].x;
                     ny = gridDef[i].y1 + j;
                     x = ss * (nx * vBase[0][0] + ny * vBase[1][0]); //the grid point xy coord
                     y = ss * (nx * vBase[0][1] + ny * vBase[1][1]);
                     color = gcolor(gridCol[i][j]);
-                    for (k = 0; k < nmv; k++) {           //for each move vertex
+                    for (k = 0; k < nmv; k++)
+                    {           //for each move vertex
                         xx = x + ss * (moveDef[n][k][0] * vBase[0][0] + moveDef[n][k][1] * vBase[1][0]);
                         yy = y + ss * (moveDef[n][k][0] * vBase[0][1] + moveDef[n][k][1] * vBase[1][1]);
                         move[k] = [xx, yy];
