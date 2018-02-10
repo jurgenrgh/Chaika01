@@ -39,7 +39,8 @@
 // Polar to Rectilinear
 // Returns [x,y], x = r*cos(phi), y = r*sin(phi)
 //
-function polarToR(r, phi) {
+function polarToR(r, phi)
+{
     var x, y;
     var p = [0, 0];
 
@@ -57,7 +58,8 @@ function polarToR(r, phi) {
 // Returns [r,phi], r = sqrt(x*x + y*y), phi = atan2(y,x),
 // -pi <= phi <= pi
 //
-function RtoPolar(p) {
+function RtoPolar(p)
+{
     var x = p[0];
     var y = p[1];
     var q = [1, 0];
@@ -73,7 +75,8 @@ function RtoPolar(p) {
 ///////////////////////////////////////////////////////////////////
 // Triangular to Rectilinear
 //
-function triToR(p) {
+function triToR(p)
+{
     var q = [1, 0];
     var x, y;
 
@@ -88,7 +91,8 @@ function triToR(p) {
 ///////////////////////////////////////////////////////////////////
 // Rectilinear to Triangular coordinates
 //
-function rToTri(p) {
+function rToTri(p)
+{
     var x = p[0];
     var y = p[1];
     var q1, q1;
@@ -109,7 +113,8 @@ function rToTri(p) {
 // which are unit vectors pointing from the origin to 3 vertices of a hexagon;
 // the other 3 vertices are -e1, -e2, -e3. 
 ///////////////////////////////////////////////////////////////////////////////
-function hexToR(p) {
+function hexToR(p)
+{
     var a = Math.sqrt(3) / 2;
     var x, y;
     var q = [1, 0];
@@ -127,7 +132,8 @@ function hexToR(p) {
 // The hex coordinates are normalized, i.e. one component is zero, the other
 // two are positive.  
 ///////////////////////////////////////////////////////////////////////////////
-function rToHex(p) {
+function rToHex(p)
+{
     var a = Math.sqrt(3);
 
     var x = p[0];
@@ -150,7 +156,8 @@ function rToHex(p) {
 // Hex coordinates are normalized when the arithmetically
 // smallest component is zero.
 ///////////////////////////////////////////////////////////////////////////////
-function normalizeHex(p) {
+function normalizeHex(p)
+{
     var min = Math.min(p[0], p[1], p[2]);
     var q = [p[0] - min, p[1] - min, p[2] - min];
     return q;
@@ -166,40 +173,43 @@ function normalizeHex(p) {
 ///////////////////////////////////////////////////////////////////////////////
 // Tess coordinates to rectilinear
 //
-function tessToR(p) {
+function tessToR(p)
+{
     var a = Math.sqrt(3) / 2; //altitude
-       
+
     var x = (3 * p[0] / 2) - (3 * p[1] / 2);
     var y = (a * p[0]) + (a * p[1]) - (2 * a * p[2]);
-    
-    var q = [x,y];
-    
+
+    var q = [x, y];
+
     return q;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rectilinear to Tess coordinates
 //
-function rToTess(p) {
+function rToTess(p)
+{
     var a = Math.sqrt(3) / 2;
-    
+
     var x = p[0];
     var y = p[1];
-    
+
     var q1 = (x / 3) + (y / (2 * a));
     var q2 = -(x / 3) + (y / (2 * a));
     var q3 = 0;
-    
-    var q = [q1,q2,q3];
+
+    var q = [q1, q2, q3];
 
     var t = normalizeHex(q);
-    
+
     return t;
 }
 
 // Same normalization as for hex coordinates: 2 coordinates are
 // positive, one is zero
-function normalizeTess(p) {
+function normalizeTess(p)
+{
     var min = Math.min(p[0], p[1], p[2]);
     var q = [p[0] - min, p[1] - min, p[2] - min];
     return q;
@@ -208,19 +218,21 @@ function normalizeTess(p) {
 /////////////////////////////////////////////////////////////////////////////
 //Distance between 2 pts in rectilinear coordinates, any dimension
 //
-function rectD(p, q) {
+function rectD(p, q)
+{
     var dx, dx2;
     var n = Math.min(p.length, q.length);
     var i;
-    
+
     var s2 = 0;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+    {
         dx = p[i] - q[i];
         dx2 = dx * dx;
         s2 += dx2;
     }
     s2 = Math.sqrt(s2);
-    
+
     return s2;
 }
 
@@ -234,12 +246,14 @@ function rectD(p, q) {
 // normTile: an array of coordinate pairs defining a tile based at [0,0] with unit side
 // ss: side length of the polygon
 //
-function makeTile(basis, point, normTile, ss){
+function makeTile(basis, point, normTile, ss)
+{
     var vxList = [];
-    
-    for( var i = 0; i < normTile.length; i++ ){
-        vxList[i] = [point.x + ss * (normTile[i][0]*basis[0][0] + normTile[i][1]*basis[1][0]),
-                            point.y + ss * (normTile[i][0]*basis[0][1] + normTile[i][1]*basis[1][1])];
+
+    for (var i = 0; i < normTile.length; i++)
+    {
+        vxList[i] = [point.x + ss * (normTile[i][0] * basis[0][0] + normTile[i][1] * basis[1][0]),
+            point.y + ss * (normTile[i][0] * basis[0][1] + normTile[i][1] * basis[1][1])];
     }
     return vxList;
 }
@@ -247,7 +261,8 @@ function makeTile(basis, point, normTile, ss){
 // 20 "good" colors; i.e. colors with good contrast
 // returns color[n mod 20]
 ///////////////////////////////////////////////////////////////////
-function gcolor(n) {
+function gcolor(n)
+{
     var colors_g = ["#3366cc", "#dc3912", "#ff9900", "#109618",
         "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e",
         "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc",
@@ -255,3 +270,37 @@ function gcolor(n) {
     return colors_g[n % colors_g.length];
 }
 
+function d3Color()
+{
+
+    var categorical = [
+        {"name": "schemeAccent", "n": 8},
+        {"name": "schemeDark2", "n": 8},
+        {"name": "schemePastel2", "n": 8},
+        {"name": "schemeSet2", "n": 8},
+        {"name": "schemeSet1", "n": 9},
+        {"name": "schemePastel1", "n": 9},
+        {"name": "schemeCategory10", "n": 10},
+        {"name": "schemeSet3", "n": 12},
+        {"name": "schemePaired", "n": 12},
+        {"name": "schemeCategory20", "n": 20},
+        {"name": "schemeCategory20b", "n": 20},
+        {"name": "schemeCategory20c", "n": 20}
+    ];
+    var color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    var svg = d3.select("body").append("svg").attr("width", 500).attr("height", 500);
+    svg.append("rect")
+            .attr("x", 10)
+            .attr("y", 10)
+            .attr("width", 100)
+            .attr("height", 100)
+            .style("fill", color(3));
+
+    svg.append("rect")
+            .attr("x", 10)
+            .attr("y", 100)
+            .attr("width", 100)
+            .attr("height", 100)
+            .style("fill", color(4));
+}

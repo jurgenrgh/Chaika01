@@ -10,6 +10,7 @@ and open the template in the editor.
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="d3.js"></script>
+
         <script type="text/javascript" src="geometricFunctions.js"></script>
         <script type="text/javascript" src="SquareClasses.js"></script>
         <link rel="shortcut icon" href="favicon.ico">
@@ -23,6 +24,7 @@ and open the template in the editor.
         <div id="grid">   </div>
 
         <script type="text/javascript">
+
             var svgW = 960;             //svg width
             var svgH = 960;             //svg height
             var originX = svgW / 2;     //origin in svg
@@ -30,6 +32,8 @@ and open the template in the editor.
             var i, j, k, m, c;
             var ss = (Math.min(svgW, svgH) / 12);    //side length of polygons
             var rr = ss / 8;                        //radius of vertex circles
+
+           // var c20c = d3.scale.category20c();      //colors
 
             var transCount = 0;
             var transRunning = false;
@@ -141,27 +145,36 @@ and open the template in the editor.
                     });
 
             var clickCircles = svgSqrGroup.selectAll("circle")
-                    .data(sqrTokens, function (d, i)
+                    .data(gridPoints, function (d, i)
                     {
                         return d.key;
                     })
+
                     .enter()
                     .append("circle")
                     .attr("cx", function (d)
                     {
-                        var ixTile = d.newIxTile;
-                        var xTile = gridPoints[ixTile].x;
-                        return xTile;
+                        return d.x;
                     })
                     .attr("cy", function (d)
                     {
-                        var ixTile = d.newIxTile;
-                        var yTile = gridPoints[ixTile].y;
-                        return yTile;
+                        return d.y;
                     })
                     .attr("r", rr)
                     .attr("stroke-width", 2)
                     .attr("fill", "transparent")
+
+                    .attr("stroke", function (d)
+                    {
+                        if (d.move > 0)
+                        {
+                            return "darkgray";
+                        } else
+                        {
+                            return "transparent";
+                        }
+                    })
+
                     .on("mouseover", handleSqrMouseOver)
                     .on("mouseout", handleSqrMouseOut)
                     .on("click", handleSqrClick);
@@ -235,21 +248,24 @@ and open the template in the editor.
 
             function handleSqrMouseOver(d, i)
             {
-                var ixTile = d.newIxTile;
-                var move = gridPoints[ixTile].move;
-                if (move > 0)
+                //var ixTile = d.newIxTile;
+                //var move = gridPoints[ixTile].move;
+                if (d.move > 0)
                 {
-                    d3.select(this).style("fill", gcolor(d.color + 1));
+                    d3.select(this).style("fill", "rgba(48, 48, 48, 0.8)")
+                            .style("stroke", "darkgray");
+
                 }
             }
 
             function handleSqrMouseOut(d, i)
             {
-                var ixTile = d.newIxTile;
-                var move = gridPoints[ixTile].move;
-                if (move > 0)
+                //var ixTile = d.newIxTile;
+                //var move = gridPoints[ixTile].move;
+                if (d.move > 0)
                 {
-                    d3.select(this).style("fill", "transparent");
+                    d3.select(this).style("fill", "transparent")
+                            .style("stoke", "black");
                 }
             }
         </script>
