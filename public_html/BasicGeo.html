@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<head>
+  <title>BasicGeo</title>
+  <script src="//d3js.org/d3.v4.min.js"></script>
+  <script src="//d3js.org/d3-geo-projection.v1.min.js"></script>
+  <script src="//d3js.org/topojson.v2.min.js"></script>
+</head>
+
+<style>
+  body {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 14px;
+    color: #333;
+  }
+
+  #content .map path {
+    fill: #ddd;
+    stroke: #aaa;
+  }
+
+  .land {
+    fill: #eee;
+    stroke: #444;
+    stroke-width: .5px;
+  }
+
+  .circle {
+    fill: none;
+  }
+
+  .circle.a {
+    stroke: #f00;
+  }
+
+  .circle.b {
+    stroke: #00a2f3;
+  }
+</style>
+
+<body>
+    <h2> Basic D3 Geography, Example 1: Map and Circles </h2>
+  <script>
+    var width = 960;
+    var height = 960;
+
+    var a = [-158, 21.5]; // Honolulu, HI
+    var b = [-77, 39]; // Washington, DC
+    var circle = d3.geoCircle();
+
+    var projection = d3.geoEquirectangular()
+      //var projection = d3.geoStereographic()
+      .scale(140)
+      .translate([width / 2, height / 2])
+      .precision(.1);
+
+    // var projection = d3.geoTwoPointEquidistant()
+    //   .points([a, b])
+    //   .scale(185)
+    //   .translate([width / 2, height / 2])
+    //   .precision(.1);
+
+    var path = d3.geoPath()
+      .projection(projection);
+
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
+
+    svg.append("g")
+      .attr("class", "circle a")
+      .selectAll("path")
+      .data(d3.range(10, 180, 10))
+      .enter().append("path")
+      .attr("d", function (r) {
+        return path(circle.center(a).radius(r)());
+      });
+
+    svg.append("g")
+      .attr("class", "circle b")
+      .selectAll("path")
+      .data(d3.range(10, 180, 10))
+      .enter().append("path")
+      .attr("d", function (r) {
+        return path(circle.center(b).radius(r)());
+      });
+
+    d3.json("world-110m.json", function (error, world) {
+      if (error) throw error;
+
+      svg.insert("path", ".circle")
+        .datum(topojson.feature(world, world.objects.land))
+        .attr("class", "land")
+        .attr("d", path);
+    });
+
+    d3.select(self.frameElement).style("height", height + "px");
+  </script>
+
+</body>

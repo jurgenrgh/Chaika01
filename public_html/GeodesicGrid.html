@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"> 
+        <title>Geodesic Grid</title>
+        <script type="text/javascript" src="d3.js"></script>
+        <script src="geodesic.js" charset="utf-8"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="favicon.ico">
+        <style>
+            path {
+                fill: none;
+                stroke: #000;
+            }
+            circle {
+                fill: none;
+                stroke: #000;
+                stroke-width: 3px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script>
+            var width = 960,
+                    height = 500;
+            var velocity = [-.003, .003];
+            var projection = d3.geoOrthographic()
+                    .scale(240);
+            var path = d3.geoPath()
+                    .projection(projection);
+            var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+            var feature = svg.append("path")
+                    .datum(d3.geodesic.multilinestring(8));
+            svg.append("circle")
+                    .attr("r", 240)
+                    .attr("cx", width / 2)
+                    .attr("cy", height / 2);
+            d3.timer(function (elapsed)
+            {
+                projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
+                feature.attr("d", path);
+            });
+        </script>
+    </body>
+</html>

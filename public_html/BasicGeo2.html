@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BasicGeo2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="d3.js"></script>
+
+    <!-- <script src="//d3js.org/d3-geo-projection.v1.min.js"></script> -->
+    <script src="//d3js.org/topojson.v2.min.js"></script>
+
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+
+        #content .map path {
+            fill: #ddd;
+            stroke: #aaa;
+        }
+
+        .land {
+            fill: #eee;
+            stroke: #444;
+            stroke-width: .5px;
+        }
+
+        .circle {
+            fill: none;
+        }
+
+        .circle.a {
+            stroke: #f00;
+        }
+
+        .circle.b {
+            stroke: #0077ff;
+        }
+
+        .circle.c {
+            stroke: #00aa77;
+        }
+    </style>
+</head>
+
+<body>
+    <h2> Basic D3 Geography, Example 2: Regular Polyhedra </h2>
+    <script>
+
+        var a = [-90, 0]; // Honolulu, HI
+        var b = [0, 0]; // Washington, DC
+        var c = [0, 90]; // Washington, DC
+
+        var width = 960;
+        var height = 960;
+
+        var circle = d3.geoCircle();
+
+        //var projection = d3.geoEquirectangular()
+            var projection = d3.geoStereographic()
+            .scale(100)
+            .translate([width / 2, height / 2])
+            .precision(.1);
+
+        var path = d3.geoPath()
+            .projection(projection);
+
+        var svg = d3.select("body").append("svg")
+            .attr("width", width)
+            .attr("height", height);
+
+        svg.append("g")
+            .attr("class", "circle a")
+            .selectAll("path")
+            .data(d3.range(45, 136, 90))
+            .enter().append("path")
+            .attr("d", function (r) {
+                return path(circle.center(a).radius(r)());
+            });
+
+        svg.append("g")
+            .attr("class", "circle b")
+            .selectAll("path")
+            .data(d3.range(45, 136, 90))
+            .enter().append("path")
+            .attr("d", function (r) {
+                return path(circle.center(b).radius(r)());
+            });
+
+        svg.append("g")
+            .attr("class", "circle c")
+            .selectAll("path")
+            .data(d3.range(45, 136, 90))
+            .enter().append("path")
+            .attr("d", function (r) {
+                return path(circle.center(c).radius(r)());
+            });
+
+         /* d3.json("world-110m.json", function (error, world) {
+            if (error) throw error;
+
+            svg.insert("path", ".circle")
+                .datum(topojson.feature(world, world.objects.land))
+                .attr("class", "land")
+                .attr("d", path);
+        }); */
+
+        d3.select(self.frameElement).style("height", height + "px");
+    </script>
+</body>
+
+</html>

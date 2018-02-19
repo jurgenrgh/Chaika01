@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Polyhedra</title>
+        <link rel="shortcut icon" href="favicon.ico">
+        <style>
+            path {
+                fill: none;
+                stroke: #000;
+            }
+            circle {
+                fill: none;
+                stroke: #000;
+                stroke-width: 3px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <h2>D3 Geo: Polyhedra; adapted from "Icosahedron" (Bostock Sample)</h2>
+        <script type="text/javascript" src="d3.js" charset="utf-8"></script>
+        <script type="text/javascript" src="geodesic.js" charset="utf-8"></script>
+
+        <script>
+
+            var width = 640;
+            var height = 640;
+            var originX = width / 2;
+            var originY = height / 2;
+            var velocity = [-.0001, .0001];
+
+            var projection = d3.geoStereographic() //d3.geoOrthographic()
+                    .clipAngle(179)
+                    .scale(50)
+                    .translate([width / 2, height / 2]);
+
+            var path = d3.geoPath()
+                    .projection(projection);
+
+            var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height)
+                    .style("border", "2px solid black");
+
+            var feature = svg.append("path")
+                    .datum(d3.geodesic.multipolygon(1));
+
+//            svg.append("circle")
+//                    .attr("r", 240)
+//                    .attr("cx", width / 2)
+//                    .attr("cy", height / 2);
+
+            d3.timer(function (elapsed)
+            {
+                projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
+                feature.attr("d", path);
+            });
+
+        </script>
+    </body>
+</html>
