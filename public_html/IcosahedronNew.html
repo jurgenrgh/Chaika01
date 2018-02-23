@@ -164,6 +164,33 @@
           }
           //console.log(projClip);
         }
+
+        function increaseScale() {
+          if (projScale <= 500) {
+            projScale += 50;
+            projection.scale(projScale);
+            path = d3.geoPath()
+              .projection(projection);
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          };
+
+          //console.log(projScale);
+        }
+        function decreaseScale() {
+          if (projScale >= 100) {
+            projScale -= 50;
+            projection.scale(projScale);
+
+            path = d3.geoPath()
+              .projection(projection);
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          }
+          //console.log(projScale);
+        }
       </script>
 </body>
 
