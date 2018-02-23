@@ -57,6 +57,11 @@
         <button type="button" onclick="increaseScale()">+</button>
         <button type="button" onclick="decreaseScale()">-</button>
         &nbsp;
+        <!-- Button to change Velocity -->
+        <label>Rotation</label>
+        <button type="button" onclick="increaseVelocity()">+</button>
+        <button type="button" onclick="decreaseVelocity()">-</button>
+        &nbsp;
         <br>
         <br>
       </div>
@@ -65,7 +70,7 @@
         var width = 960;
         var height = 960;
 
-        var velocity = [-.006, .006];
+        var velocity = [-.005, .005];
         //var velocity = [-.00, .00]; //rotation speed
 
         var polyType = "Tetrahedron";
@@ -190,6 +195,26 @@
               .attr("d", path);
           }
           //console.log(projScale);
+        }
+
+        function increaseVelocity() {
+          if (velocity[1] <= .06) {
+            velocity[0] -= 0.005;
+            velocity[1] += 0.005;
+          };
+
+          //console.log(velocity);
+        }
+        function decreaseVelocity() {
+          if (velocity[1] >= .005) {
+            velocity[0] += 0.005;
+            velocity[1] -= 0.005;
+          }
+          else {
+            velocity[0] = 0;
+            velocity[1] = 0;
+          };
+          //console.log(velocity);
         }
       </script>
 </body>
