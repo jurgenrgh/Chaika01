@@ -1,61 +1,63 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8"> 
-        <title>Icosahedron</title>
-        <link rel="shortcut icon" href="favicon.ico">
-        <style>
-            path {
-                fill: none;
-                stroke: #000;
-            }
 
-            circle {
-                fill: none;
-                stroke: #000;
-                stroke-width: 3px;
-            }
-        </style>
-    </head>
+<head>
+  <meta charset="utf-8">
+  <title>Icosahedron</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <style>
+    path {
+      fill: none;
+      stroke: #000;
+    }
+
+    circle {
+      fill: none;
+      stroke: #000;
+      stroke-width: 3px;
+    }
+  </style>
+</head>
 
 
-    <body>
-        <h2>D3 Geo: Orthographic Projection, Icosahedron; Bostock Sample</h2>
-        <script type="text/javascript" src="d3.js" charset="utf-8"></script>
-        <script type="text/javascript" src="geodesic.js" charset="utf-8"></script>
-        
-        <script>
+<body>
+  <h2>D3 Geo: Orthographic Projection, Icosahedron; Bostock Sample</h2>
+  <p>Updated for D3 v4.0</p>
+  <script type="text/javascript" src="d3.js" charset="utf-8"></script>
+  <script type="text/javascript" src="geodesic.js" charset="utf-8"></script>
 
-            var width = 960,
-                    height = 500;
+  <script>
 
-            var velocity = [-.003, .003];
+    var width = 960,
+      height = 500;
 
-            var projection = d3.geoOrthographic()
-                    .clipAngle(90)
-                    .scale(240);
+    var velocity = [-.003, .003];
 
-            var path = d3.geoPath()
-                    .projection(projection);
+    var projection = d3.geoOrthographic()
+      .clipAngle(90)
+      .scale(240);
 
-            var svg = d3.select("body").append("svg")
-                    .attr("width", width)
-                    .attr("height", height);
+    var path = d3.geoPath()
+      .projection(projection);
 
-            var feature = svg.append("path")
-                    .datum(d3.geodesic.multipolygon(1));
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
 
-            svg.append("circle")
-                    .attr("r", 240)
-                    .attr("cx", width / 2)
-                    .attr("cy", height / 2);
+    var feature = svg.append("path")
+      .datum(d3.geodesic.multipolygon(1));
 
-            d3.timer(function (elapsed)
-            {
-                projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
-                feature.attr("d", path);
-            });
+    svg.append("circle")
+      .attr("r", 240)
+      .attr("cx", width / 2)
+      .attr("cy", height / 2);
 
-        </script>
-    </body>
+    d3.timer(function (elapsed) {
+      projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
+      feature.attr("d", path);
+    });
+
+  </script>
+</body>
+
 </html>

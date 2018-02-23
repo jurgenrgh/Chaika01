@@ -7,8 +7,9 @@
   <link rel="shortcut icon" href="favicon.ico">
   <style>
     path {
-      fill: none;
+      fill: #4682B4;
       stroke: #000;
+      stroke-width: 2px;
     }
 
     circle {
@@ -16,28 +17,66 @@
       stroke: #000;
       stroke-width: 3px;
     }
+
+    #inds {
+      top: 10px;
+      left: 10px;
+    }
   </style>
 </head>
 
-
 <body>
-  <h2>D3 Geo: Orthographic Projection, Icosahedron</h2>
+  <h2>D3 Geo: Orthographic Projection, Regular Polyhedra</h2>
   <p>Derived from Bostock Sample
     <a target="_blank" href="Icosahedron.html">Icosahedron </a>
     <p>
       <script type="text/javascript" src="d3.js" charset="utf-8"></script>
-      <script type="text/javascript" src="geodesic.js" charset="utf-8"></script>
+      <script type="text/javascript" src="platonic.js" charset="utf-8"></script>
+
+      <div id="option">
+        <!--Dropdown to choose Polyhedron -->
+        <select id="poly">
+          <option value="Tetrahedron" selected="selected">Tetrahedron</option>
+          <option value="Cube">Cube</option>
+          <option value="Octahedron">Octahedron</option>
+          <option value="Dodecahedron">Dodecahedron</option>
+          <option value="Icosahedron">Icosahedron</option>
+        </select> &nbsp;
+        <!--Dropdown to choose Projection Function -->
+        <select id="projection">
+          <option value="Stereographic" selected="selected">Stereographic</option>
+          <option value="Orthographic">Orthographic</option>
+        </select> &nbsp;
+        <!-- Button to change Clipping Angle -->
+        <label>Clip Angle</label>
+        <button type="button" onclick="increaseClip()">+</button>
+        <button type="button" onclick="decreaseClip()">-</button>
+        &nbsp;
+        <!-- Button to change Scale -->
+        <label>Scale</label>
+        <button type="button" onclick="increaseScale()">+</button>
+        <button type="button" onclick="decreaseScale()">-</button>
+        &nbsp;
+        <br>
+        <br>
+      </div>
 
       <script>
-        var width = 800,
-          height = 800;
+        var width = 960;
+        var height = 960;
 
-        //var velocity = [-.003, .003];
-        var velocity = [-.00, .00];
+        var velocity = [-.006, .006];
+        //var velocity = [-.00, .00]; //rotation speed
 
-        var projection = d3.geoOrthographic()
-          .clipAngle(90)
-          .scale(240);
+        var polyType = "Tetrahedron";
+        var projClip = 90;
+        var projScale = 240;
+        //var projection = d3.geoOrthographic()
+        var projection = d3.geoStereographic()
+          //.clipAngle(90)
+          .clipAngle(projClip)
+          //.scale(240)
+          .scale(projScale);
 
         var path = d3.geoPath()
           .projection(projection);
@@ -46,19 +85,85 @@
           .attr("width", width)
           .attr("height", height);
 
+        //The entire work is done by the multipolygon function in geodesic.js
+        //which is updated and adapted for all regular polyhedra in platonic.js
         var feature = svg.append("path")
-          .datum(d3.geodesic.multipolygon(1))
+          .datum(d3.geodesic.multipolygon(polyType))
           .attr("d", path);
 
-        svg.append("circle")
-          .attr("r", 240)
-          .attr("cx", width / 2)
-          .attr("cy", height / 2);
+        // svg.append("circle")
+        //   .attr("r", projScale)
+        //   .attr("cx", width / 2)
+        //   .attr("cy", height / 2);
 
-         //d3.timer(function(elapsed) {
-           //projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
-           //feature.attr("d", path);
-        //});
+        d3.timer(function (elapsed) {
+          projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
+          feature.attr("d", path);
+        });
+
+        d3.select('#poly')
+          .on("change", function () {
+            var sect = document.getElementById("poly");
+            var section = sect.options[sect.selectedIndex].value;
+            polyType = section;
+            //console.log(polyType);
+
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          }, { passive: true });
+
+        d3.select('#projection')
+          .on("change", function () {
+            var sect = document.getElementById("projection");
+            var section = sect.options[sect.selectedIndex].value;
+            projType = section;
+            console.log(projType);
+            if (projType == "Stereographic") {
+              projection = d3.geoStereographic()
+                .clipAngle(projClip)
+                .scale(projScale);
+            }
+            if (projType == "Orthographic") {
+              projection = d3.geoOrthographic()
+                .clipAngle(projClip)
+                .scale(projScale);
+            }
+
+            path = d3.geoPath()
+              .projection(projection);
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          }, { passive: true });
+
+        function increaseClip() {
+          if (projClip <= 160) {
+            projClip += 15;
+            projection.clipAngle(projClip);
+
+            path = d3.geoPath()
+              .projection(projection);
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          };
+
+          //console.log(projClip);
+        }
+        function decreaseClip() {
+          if (projClip >= 30) {
+            projClip -= 15;
+            projection.clipAngle(projClip);
+
+            path = d3.geoPath()
+              .projection(projection);
+            feature
+              .datum(d3.geodesic.multipolygon(polyType))
+              .attr("d", path);
+          }
+          //console.log(projClip);
+        }
       </script>
 </body>
 
