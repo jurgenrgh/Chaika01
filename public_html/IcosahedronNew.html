@@ -26,197 +26,186 @@
 </head>
 
 <body>
-  <h2>D3 Geo: Orthographic Projection, Regular Polyhedra</h2>
+  <h2>D3 Geo: Orthographic and Stereographic Projections, Regular Polyhedra</h2>
   <p>Derived from Bostock Sample
     <a target="_blank" href="Icosahedron.html">Icosahedron </a>
-    <p>
-      <script type="text/javascript" src="d3.js" charset="utf-8"></script>
-      <script type="text/javascript" src="platonic.js" charset="utf-8"></script>
+  </p>
+  <script type="text/javascript" src="d3.js" charset="utf-8"></script>
+  <script type="text/javascript" src="platonic.js" charset="utf-8"></script>
 
-      <div id="option">
-        <!--Dropdown to choose Polyhedron -->
-        <select id="poly">
-          <option value="Tetrahedron" selected="selected">Tetrahedron</option>
-          <option value="Cube">Cube</option>
-          <option value="Octahedron">Octahedron</option>
-          <option value="Dodecahedron">Dodecahedron</option>
-          <option value="Icosahedron">Icosahedron</option>
-        </select> &nbsp;
-        <!--Dropdown to choose Projection Function -->
-        <select id="projection">
-          <option value="Stereographic" selected="selected">Stereographic</option>
-          <option value="Orthographic">Orthographic</option>
-        </select> &nbsp;
-        <!-- Button to change Clipping Angle -->
-        <label>Clip Angle</label>
-        <button type="button" onclick="increaseClip()">+</button>
-        <button type="button" onclick="decreaseClip()">-</button>
-        &nbsp;
-        <!-- Button to change Scale -->
-        <label>Scale</label>
-        <button type="button" onclick="increaseScale()">+</button>
-        <button type="button" onclick="decreaseScale()">-</button>
-        &nbsp;
-        <!-- Button to change Velocity -->
-        <label>Rotation</label>
-        <button type="button" onclick="increaseVelocity()">+</button>
-        <button type="button" onclick="decreaseVelocity()">-</button>
-        &nbsp;
-        <br>
-        <br>
-      </div>
+  <div id="option">
+    <!--Dropdown to choose Polyhedron -->
+    <select id="poly">
+      <option value="Tetrahedron" selected="selected">Tetrahedron</option>
+      <option value="Cube">Cube</option>
+      <option value="Octahedron">Octahedron</option>
+      <option value="Dodecahedron">Dodecahedron</option>
+      <option value="Icosahedron">Icosahedron</option>
+    </select> &nbsp;
+    <!--Dropdown to choose Projection Function -->
+    <select id="projection">
+      <option value="Stereographic" selected="selected">Stereographic</option>
+      <option value="Orthographic">Orthographic</option>
+    </select> &nbsp;
+    <!-- Button to change Clipping Angle -->
+    <label>Clip Angle</label>
+    <button type="button" onclick="increaseClip()">+</button>
+    <button type="button" onclick="decreaseClip()">-</button>
+    &nbsp;
+    <!-- Button to change Scale -->
+    <label>Scale</label>
+    <button type="button" onclick="increaseScale()">+</button>
+    <button type="button" onclick="decreaseScale()">-</button>
+    &nbsp;
+    <!-- Button to change Velocity -->
+    <label>Rotation</label>
+    <button type="button" onclick="increaseVelocity()">+</button>
+    <button type="button" onclick="decreaseVelocity()">-</button>
+    &nbsp;
+    <br>
+    <br>
+  </div>
 
-      <script>
-        var width = 960;
-        var height = 960;
+  <script>
+    var width = 960;
+    var height = 960;
 
-        var velocity = [-.005, .005];
-        //var velocity = [-.00, .00]; //rotation speed
+    var velocity = [-.005, .005];
+    //var velocity = [-.00, .00]; //rotation speed
 
-        var polyType = "Tetrahedron";
-        var projClip = 90;
-        var projScale = 240;
-        //var projection = d3.geoOrthographic()
-        var projection = d3.geoStereographic()
-          //.clipAngle(90)
-          .clipAngle(projClip)
-          //.scale(240)
-          .scale(projScale);
+    var polyType = "Tetrahedron";
+    var projClip = 90;
+    var projScale = 240;
+    //var projection = d3.geoOrthographic()
+    var projection = d3.geoStereographic()
+      //.clipAngle(90)
+      .clipAngle(projClip)
+      //.scale(240)
+      .scale(projScale);
 
-        var path = d3.geoPath()
-          .projection(projection);
+    var path = d3.geoPath()
+      .projection(projection);
 
-        var svg = d3.select("body").append("svg")
-          .attr("width", width)
-          .attr("height", height);
+    var svg = d3.select("body").append("svg")
+      .attr("width", width)
+      .attr("height", height);
 
-        //The entire work is done by the multipolygon function in geodesic.js
-        //which is updated and adapted for all regular polyhedra in platonic.js
-        var feature = svg.append("path")
+    //The entire work is done by the multipolygon function in geodesic.js
+    //which is updated and adapted for all regular polyhedra in platonic.js
+    var feature = svg.append("path")
+      .datum(d3.geodesic.multipolygon(polyType))
+      .attr("d", path);
+
+    d3.timer(function (elapsed) {
+      projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
+      feature.attr("d", path);
+    });
+
+    d3.select('#poly')
+      .on("change", function () {
+        var sect = document.getElementById("poly");
+        var section = sect.options[sect.selectedIndex].value;
+        polyType = section;
+        //console.log(polyType);
+
+        feature
           .datum(d3.geodesic.multipolygon(polyType))
           .attr("d", path);
+      }, { passive: true });
 
-        // svg.append("circle")
-        //   .attr("r", projScale)
-        //   .attr("cx", width / 2)
-        //   .attr("cy", height / 2);
-
-        d3.timer(function (elapsed) {
-          projection.rotate([elapsed * velocity[0], elapsed * velocity[1]]);
-          feature.attr("d", path);
-        });
-
-        d3.select('#poly')
-          .on("change", function () {
-            var sect = document.getElementById("poly");
-            var section = sect.options[sect.selectedIndex].value;
-            polyType = section;
-            //console.log(polyType);
-
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          }, { passive: true });
-
-        d3.select('#projection')
-          .on("change", function () {
-            var sect = document.getElementById("projection");
-            var section = sect.options[sect.selectedIndex].value;
-            projType = section;
-            console.log(projType);
-            if (projType == "Stereographic") {
-              projection = d3.geoStereographic()
-                .clipAngle(projClip)
-                .scale(projScale);
-            }
-            if (projType == "Orthographic") {
-              projection = d3.geoOrthographic()
-                .clipAngle(projClip)
-                .scale(projScale);
-            }
-
-            path = d3.geoPath()
-              .projection(projection);
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          }, { passive: true });
-
-        function increaseClip() {
-          if (projClip <= 160) {
-            projClip += 15;
-            projection.clipAngle(projClip);
-
-            path = d3.geoPath()
-              .projection(projection);
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          };
-
-          //console.log(projClip);
+    d3.select('#projection')
+      .on("change", function () {
+        var sect = document.getElementById("projection");
+        var section = sect.options[sect.selectedIndex].value;
+        var projType = section;
+        console.log(projType);
+        if (projType == "Stereographic") {
+          projection = d3.geoStereographic()
+            .clipAngle(projClip)
+            .scale(projScale);
         }
-        function decreaseClip() {
-          if (projClip >= 30) {
-            projClip -= 15;
-            projection.clipAngle(projClip);
-
-            path = d3.geoPath()
-              .projection(projection);
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          }
-          //console.log(projClip);
+        if (projType == "Orthographic") {
+          projection = d3.geoOrthographic()
+            .clipAngle(projClip)
+            .scale(projScale);
         }
 
-        function increaseScale() {
-          if (projScale <= 500) {
-            projScale += 50;
-            projection.scale(projScale);
-            path = d3.geoPath()
-              .projection(projection);
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          };
+        path = d3.geoPath()
+          .projection(projection);
+        feature
+          .datum(d3.geodesic.multipolygon(polyType))
+          .attr("d", path);
+      }, { passive: true });
 
-          //console.log(projScale);
-        }
-        function decreaseScale() {
-          if (projScale >= 100) {
-            projScale -= 50;
-            projection.scale(projScale);
+    function increaseClip() {
+      if (projClip <= 160) {
+        projClip += 15;
+        projection.clipAngle(projClip);
 
-            path = d3.geoPath()
-              .projection(projection);
-            feature
-              .datum(d3.geodesic.multipolygon(polyType))
-              .attr("d", path);
-          }
-          //console.log(projScale);
-        }
+        path = d3.geoPath()
+          .projection(projection);
+        feature
+          .datum(d3.geodesic.multipolygon(polyType))
+          .attr("d", path);
+      };
+    }
 
-        function increaseVelocity() {
-          if (velocity[1] <= .06) {
-            velocity[0] -= 0.005;
-            velocity[1] += 0.005;
-          };
+    function decreaseClip() {
+      if (projClip >= 30) {
+        projClip -= 15;
+        projection.clipAngle(projClip);
 
-          //console.log(velocity);
-        }
-        function decreaseVelocity() {
-          if (velocity[1] >= .005) {
-            velocity[0] += 0.005;
-            velocity[1] -= 0.005;
-          }
-          else {
-            velocity[0] = 0;
-            velocity[1] = 0;
-          };
-          //console.log(velocity);
-        }
-      </script>
+        path = d3.geoPath()
+          .projection(projection);
+        feature
+          .datum(d3.geodesic.multipolygon(polyType))
+          .attr("d", path);
+      }
+    }
+
+    function increaseScale() {
+      if (projScale <= 500) {
+        projScale += 50;
+        projection.scale(projScale);
+        path = d3.geoPath()
+          .projection(projection);
+        feature
+          .datum(d3.geodesic.multipolygon(polyType))
+          .attr("d", path);
+      };
+    }
+
+    function decreaseScale() {
+      if (projScale >= 100) {
+        projScale -= 50;
+        projection.scale(projScale);
+
+        path = d3.geoPath()
+          .projection(projection);
+        feature
+          .datum(d3.geodesic.multipolygon(polyType))
+          .attr("d", path);
+      }
+    }
+
+    function increaseVelocity() {
+      if (velocity[1] <= .06) {
+        velocity[0] -= 0.005;
+        velocity[1] += 0.005;
+      };
+    }
+
+    function decreaseVelocity() {
+      if (velocity[1] >= .005) {
+        velocity[0] += 0.005;
+        velocity[1] -= 0.005;
+      }
+      else {
+        velocity[0] = 0;
+        velocity[1] = 0;
+      };
+    }
+  </script>
 </body>
 
 </html>

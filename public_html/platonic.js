@@ -1,10 +1,16 @@
 (function () {
+    //The whole thing is wrapped in an anonymous function, which
+    //causes immediate execution of this code
+    //
     var phi = (Math.sqrt(5) + 1) / 2; //golden ratio
     var rho = 180 / Math.PI;
     var iphi = (Math.sqrt(5) - 1) / 2; //inverse phi = 1/phi
 
     // Vertices and Faces of the 5 regular polyhedra,
     // centered at [0,0,0]
+    // First the vertices are explicitly assigned, then the
+    // faces are defined in terms of vertex indices
+    //
     var vTetrahedron = [
         [+1, +1, +1], [-1, -1, +1], [+1, -1, -1], [-1, +1, -1]
     ];
@@ -63,7 +69,6 @@
             return vDodecahedron[i];
         });
     });
-    //console.log(fDodecahedron);
 
     var vIcosahedron = [
         [1, phi, 0], [-1, phi, 0], [1, -phi, 0], [-1, -phi, 0],
@@ -82,8 +87,8 @@
         });
     });
     
-    var vertices;// = vDodecahedron;
-    var faces;// = fDodecahedron;
+    var vertices;
+    var faces;
 
     d3.geodesic = {
         multipolygon: function (polyType) {
@@ -133,7 +138,7 @@
             Math.atan2(y, x) * rho,
             Math.acos(z / Math.sqrt(x * x + y * y + z * z)) * rho - 90
         ];
-    }
+    };
 })();
 
 

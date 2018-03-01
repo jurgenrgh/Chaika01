@@ -162,7 +162,7 @@ and open the template in the editor.
             {
                 var ixTile = d.newIxTile;
                 var move = gridPoints[ixTile].move;
-
+                //console.log("over", ixTile, move );
                 if (move > 0)
                 {
                     d3.select(this).style("fill", "orange");
@@ -174,7 +174,7 @@ and open the template in the editor.
             {
                 var ixTile = d.newIxTile;
                 var move = gridPoints[ixTile].move;
-
+                //console.log("out", ixTile, move );
                 if (move > 0)
                 {
                     d3.select(this).style("fill", gcolor(d.color));
@@ -188,21 +188,22 @@ and open the template in the editor.
             {
                 var movefromTileIx = [];
                 var movetoTileIx = [];
-                
+                //console.log("click start", transRunning);
                 if (transRunning == false)
                 {
                     transCount = 0;
-                    transRunning = true;
+                    
 
                     //Key of the currently selected token gives index of tile where
                     //it is currently located
                     var move = gridPoints[d.ixTile].move;
                     var cx = gridPoints[d.ixTile].x;
                     var cy = gridPoints[d.ixTile].y;
-
+                    //console.log("click", cx,cy, move );
                     // Proceed if the selected tile is a move center 
                     if (move > 0)
                     {
+                        transRunning = true;
                         for (var m = 0; m < sqr3x3MoveDef.length; m++)
                         {
                             var p0 = [sqr3x3MoveDef[m].x0, sqr3x3MoveDef[m].y0];

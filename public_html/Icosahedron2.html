@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
-    path {
-        fill: #f88e22;
-        stroke: #fff;
-        stroke-width: 2px;
-    }
-</style>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Icosahedron2</title>
+    <link rel="shortcut icon" href="favicon.ico">
+    <style>
+        path {
+            fill: #f88e22;
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
 
 <body>
     <!--<script src="//d3js.org/d3.v3.min.js"></script>-->
@@ -17,7 +23,7 @@
             height = 500;
 
         //var velocity = [.010, .005],
-        var velocity = [.000, .000],
+        var velocity = [.003, .003],
             t0 = Date.now();
 
         var projection = d3.geoOrthographic()
@@ -54,7 +60,11 @@
                     [[x + 36, y], [x - 36, y], [x - 36, 90]]
                 );
             }
+            console.log(faces);
             return faces;
         }
 
     </script>
+</body>
+
+</html>
